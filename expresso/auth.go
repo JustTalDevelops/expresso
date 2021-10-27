@@ -6,7 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"github.com/justtaldevelops/expresso/expresso/packet"
+	"github.com/justtaldevelops/expresso/expresso/protocol/packet"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -17,9 +17,9 @@ import (
 const sessionServer = "https://sessionserver.mojang.com/session/minecraft/"
 
 // authResponse is a response for authentication from Mojang containing important information such as UUIDs.
-type  authResponse struct {
-	UUID string `json:"id"`
-	Name string `json:"name"`
+type authResponse struct {
+	UUID       string      `json:"id"`
+	Name       string      `json:"name"`
 	Properties interface{} `json:"properties,omitempty"`
 }
 
@@ -31,7 +31,7 @@ func authenticatedWithMojang(username string, sharedSecret []byte, encryptionReq
 	params.Set("username", username)
 	params.Set("serverId", authDigest(encryptionRequest.ServerID, sharedSecret, encryptionRequest.PublicKey))
 
-	req, err := http.NewRequest("GET", sessionServer + "hasJoined", nil)
+	req, err := http.NewRequest("GET", sessionServer+"hasJoined", nil)
 	req.URL.RawQuery = params.Encode()
 	if err != nil {
 		return false, authResponse{}

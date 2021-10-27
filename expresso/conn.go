@@ -8,9 +8,9 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/justtaldevelops/expresso/expresso/packet"
 	"github.com/justtaldevelops/expresso/expresso/protocol"
 	"github.com/justtaldevelops/expresso/expresso/protocol/cfb8"
+	packet2 "github.com/justtaldevelops/expresso/expresso/protocol/packet"
 	"github.com/justtaldevelops/expresso/expresso/text"
 	"go.uber.org/atomic"
 	"net"
@@ -21,7 +21,7 @@ type Connection struct {
 	conn     net.Conn
 	listener *Listener
 
-	packets chan packet.Packet
+	packets chan packet2.Packet
 
 	threshold atomic.Int32
 
@@ -40,22 +40,22 @@ func newConn(listener *Listener, netConn net.Conn) {
 		conn:     netConn,
 		listener: listener,
 
-		packets: make(chan packet.Packet),
+		packets: make(chan packet2.Packet),
 
 		reader: protocol.NewReader(netConn),
 		writer: protocol.NewWriter(netConn),
 	}
-	conn.updateState(packet.StateHandshaking())
+	conn.updateState(packet2.StateHandshaking())
 
 	go conn.startReading()
 }
 
 // Disconnect disconnects the connection for a given reason.
 func (c *Connection) Disconnect(reason text.Text) {
-	if c.state() == packet.StateLogin() {
-		_ = c.WritePacket(&packet.LoginDisconnect{Reason: reason})
-	} else if c.state() == packet.StatePlay() {
-		_ = c.WritePacket(&packet.Disconnect{Reason: reason})
+	if c.state() == packet2.StateLogin() {
+		_ = c.WritePacket(&packet2.LoginDisconnect{Reason: reason})
+	} else if c.state() == packet2.StatePlay() {
+		_ = c.WritePacket(&packet2.Disconnect{Reason: reason})
 	}
 
 	c.Close()
@@ -67,8 +67,8 @@ func (c *Connection) Close() {
 }
 
 // WritePacket writes a packet to the connection.
-func (c *Connection) WritePacket(pk packet.Packet) error {
-	if c.state().Packet(packet.BoundClient(), pk.ID()) == nil {
+func (c *Connection) WritePacket(pk packet2.Packet) error {
+	if c.state().Packet(packet2.BoundClient(), pk.ID()) == nil {
 		return fmt.Errorf("packet does not exist in current state")
 	}
 
@@ -81,7 +81,7 @@ func (c *Connection) WritePacket(pk packet.Packet) error {
 }
 
 // ReadPacket reads a packet from the readable packets available.
-func (c *Connection) ReadPacket() (packet.Packet, error) {
+func (c *Connection) ReadPacket() (packet2.Packet, error) {
 	pk, ok := <-c.packets
 	if !ok {
 		return nil, fmt.Errorf("read packet: connection closed")
@@ -94,7 +94,7 @@ func (c *Connection) ReadPacket() (packet.Packet, error) {
 func (c *Connection) UpdateCompressionThreshold(threshold int32) error {
 	if threshold != c.CompressionThreshold() {
 		// New threshold. Make sure that the client is aware.
-		err := c.WritePacket(&packet.SetCompression{Threshold: threshold})
+		err := c.WritePacket(&packet2.SetCompression{Threshold: threshold})
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ func (c *Connection) Compression() bool {
 }
 
 // readPacket reads a packet from a connection.
-func (c *Connection) readPacket() (packet.Packet, error) {
+func (c *Connection) readPacket() (packet2.Packet, error) {
 	// Decode the newest packet from the connection.
 	dec, err := c.decode()
 	if err != nil {
@@ -123,7 +123,7 @@ func (c *Connection) readPacket() (packet.Packet, error) {
 	}
 
 	// Unmarshal it into a packet.
-	pk := c.state().Packet(packet.BoundServer(), dec.id)
+	pk := c.state().Packet(packet2.BoundServer(), dec.id)
 	pk.Unmarshal(protocol.NewReader(bytes.NewReader(dec.contents)))
 
 	if ok, err := c.handlePacket(pk); ok {
@@ -139,13 +139,13 @@ func (c *Connection) readPacket() (packet.Packet, error) {
 }
 
 // updateState updates the connection state.
-func (c *Connection) updateState(state packet.State) {
+func (c *Connection) updateState(state packet2.State) {
 	c.packetState.Store(state)
 }
 
 // state returns the connection state.
-func (c *Connection) state() packet.State {
-	return c.packetState.Load().(packet.State)
+func (c *Connection) state() packet2.State {
+	return c.packetState.Load().(packet2.State)
 }
 
 // startReading starts reading packets from the connection.
@@ -156,7 +156,7 @@ func (c *Connection) startReading() {
 			c.Close()
 			break
 		}
-		if c.state() == packet.StatePlay() {
+		if c.state() == packet2.StatePlay() {
 			c.packets <- pk
 		}
 	}
@@ -165,9 +165,9 @@ func (c *Connection) startReading() {
 }
 
 // handlePacket handles a read packet from the connection.
-func (c *Connection) handlePacket(pk packet.Packet) (bool, error) {
+func (c *Connection) handlePacket(pk packet2.Packet) (bool, error) {
 	switch pk := pk.(type) {
-	case *packet.Handshake:
+	case *packet2.Handshake:
 		return c.handleHandshake(pk)
 	}
 
@@ -175,7 +175,7 @@ func (c *Connection) handlePacket(pk packet.Packet) (bool, error) {
 }
 
 // handleHandshake handles the initial handshake.
-func (c *Connection) handleHandshake(pk *packet.Handshake) (bool, error) {
+func (c *Connection) handleHandshake(pk *packet2.Handshake) (bool, error) {
 	switch pk.NextState {
 	case 0x01:
 		return c.handlePing()
@@ -197,7 +197,7 @@ func (c *Connection) handleHandshake(pk *packet.Handshake) (bool, error) {
 
 // handlePing handles the server list ping sequence.
 func (c *Connection) handlePing() (bool, error) {
-	c.updateState(packet.StateStatus())
+	c.updateState(packet2.StateStatus())
 
 	for i := 0; i < 2; i++ {
 		// Decode the newest packet from the connection.
@@ -208,34 +208,34 @@ func (c *Connection) handlePing() (bool, error) {
 
 		// Handle the part of the sequence we are in.
 		switch pk := pk.(type) {
-		case *packet.ClientStatusRequest:
-			if err = c.WritePacket(&packet.ServerStatusResponse{Status: c.listener.Status().String()}); err != nil {
+		case *packet2.ClientStatusRequest:
+			if err = c.WritePacket(&packet2.ServerStatusResponse{Status: c.listener.Status().String()}); err != nil {
 				return true, err
 			}
-		case *packet.ClientStatusPing:
-			if err = c.WritePacket(&packet.ServerStatusPong{Payload: pk.Payload}); err != nil {
+		case *packet2.ClientStatusPing:
+			if err = c.WritePacket(&packet2.ServerStatusPong{Payload: pk.Payload}); err != nil {
 				return true, err
 			}
 		}
 	}
 
-	c.updateState(packet.StateHandshaking())
+	c.updateState(packet2.StateHandshaking())
 	return true, nil
 }
 
 // handleLogin handles a login attempt from a client.
 func (c *Connection) handleLogin() (bool, error) {
-	c.updateState(packet.StateLogin())
+	c.updateState(packet2.StateLogin())
 
 	// Decode the newest packet from the connection.
 	pk, err := c.readPacket()
 	if err != nil {
 		return true, err
 	}
-	loginStart := pk.(*packet.LoginStart)
+	loginStart := pk.(*packet2.LoginStart)
 
 	// Send an encryption request.
-	encryptionRequest := &packet.EncryptionRequest{
+	encryptionRequest := &packet2.EncryptionRequest{
 		PublicKey:   c.listener.keyPair.PublicKey,
 		VerifyToken: c.listener.verifyToken,
 	}
@@ -251,7 +251,7 @@ func (c *Connection) handleLogin() (bool, error) {
 	}
 
 	// Decode the shared secret and verify token.
-	resp := pk.(*packet.EncryptionResponse)
+	resp := pk.(*packet2.EncryptionResponse)
 	sharedSecret, err := rsa.DecryptPKCS1v15(rand.Reader, c.listener.keyPair, resp.SharedSecret)
 	if err != nil {
 		return true, err
@@ -296,7 +296,7 @@ func (c *Connection) handleLogin() (bool, error) {
 	}
 
 	// Succeed with login!
-	err = c.WritePacket(&packet.LoginSuccess{
+	err = c.WritePacket(&packet2.LoginSuccess{
 		UUID:     uuid.MustParse(data.UUID),
 		Username: data.Name,
 	})
@@ -305,7 +305,7 @@ func (c *Connection) handleLogin() (bool, error) {
 	}
 
 	// Play packets can now be used, so we can add it to the listener now.
-	c.updateState(packet.StatePlay())
+	c.updateState(packet2.StatePlay())
 	c.listener.incoming <- c
 	return true, nil
 }
