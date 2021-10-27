@@ -44,8 +44,10 @@ var (
 	}
 	// playCollection is the packet collection for the play state.
 	playCollection = &packetCollection{
-		// TODO: Add play packets.
-		clientBoundPackets: map[int32]func() Packet{},
+		// TODO: Add all play packets.
+		clientBoundPackets: map[int32]func() Packet{
+			0x1A: func() Packet { return &Disconnect{} },
+		},
 		serverBoundPackets: map[int32]func() Packet{},
 	}
 )

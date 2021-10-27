@@ -18,7 +18,7 @@ import (
 
 // Connection is a connection on an Expresso listener.
 type Connection struct {
-	conn net.Conn
+	conn     net.Conn
 	listener *Listener
 
 	packets chan packet.Packet
@@ -37,7 +37,7 @@ const defaultCompressionThreshold = 256
 // newConn initializes a new Expresso connection.
 func newConn(listener *Listener, netConn net.Conn) {
 	conn := &Connection{
-		conn: netConn,
+		conn:     netConn,
 		listener: listener,
 
 		packets: make(chan packet.Packet),
@@ -55,15 +55,15 @@ func (c *Connection) Disconnect(reason text.Text) {
 	if c.state() == packet.StateLogin() {
 		_ = c.WritePacket(&packet.LoginDisconnect{Reason: reason})
 	} else if c.state() == packet.StatePlay() {
-		// TODO: Close using play packet.
+		_ = c.WritePacket(&packet.Disconnect{Reason: reason})
 	}
+
 	c.Close()
 }
 
 // Close closes the connection.
 func (c *Connection) Close() {
 	_ = c.conn.Close()
-	close(c.packets)
 }
 
 // WritePacket writes a packet to the connection.
@@ -160,6 +160,8 @@ func (c *Connection) startReading() {
 			c.packets <- pk
 		}
 	}
+
+	close(c.packets)
 }
 
 // handlePacket handles a read packet from the connection.
