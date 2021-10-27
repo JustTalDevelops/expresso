@@ -3,5 +3,4 @@ A (work-in-progress) library for interacting with the Minecraft: Java Edition pr
 library and heavily inspired by gophertunnel. 
 
 ## Disclaimer
-Do not expect anything completely working right now! Currently, there's 
-only enough to get through the login phase.
+Do not expect anything completely working right now! Currently, there's only enough to get through the login phase.

@@ -13,7 +13,7 @@ type State struct {
 func StateHandshaking() State {
 	return State{
 		packetCollection: handshakingCollection,
-		state: stateHandshaking,
+		state:            stateHandshaking,
 	}
 }
 
@@ -21,7 +21,7 @@ func StateHandshaking() State {
 func StateStatus() State {
 	return State{
 		packetCollection: statusCollection,
-		state: stateStatus,
+		state:            stateStatus,
 	}
 }
 
@@ -29,7 +29,7 @@ func StateStatus() State {
 func StateLogin() State {
 	return State{
 		packetCollection: loginCollection,
-		state: stateLogin,
+		state:            stateLogin,
 	}
 }
 
@@ -37,19 +37,16 @@ func StateLogin() State {
 func StatePlay() State {
 	return State{
 		packetCollection: playCollection,
-		state: statePlay,
+		state:            statePlay,
 	}
 }
 
 // Packet finds a packet in the state. based on the target bound and ID.
 func (s State) Packet(bound Bound, id int32) Packet {
-	switch bound {
-	case BoundClient():
+	if bound == BoundClient() {
 		return s.clientBoundPackets[id]()
-	case BoundServer():
-		return s.serverBoundPackets[id]()
 	}
-	panic("should never happen")
+	return s.serverBoundPackets[id]()
 }
 
 type state byte
