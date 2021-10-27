@@ -1,4 +1,4 @@
-package cfb8
+package encryption
 
 import "crypto/cipher"
 

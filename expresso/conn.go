@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/justtaldevelops/expresso/expresso/protocol"
-	"github.com/justtaldevelops/expresso/expresso/protocol/cfb8"
+	"github.com/justtaldevelops/expresso/expresso/protocol/encryption"
 	packet2 "github.com/justtaldevelops/expresso/expresso/protocol/packet"
 	"github.com/justtaldevelops/expresso/expresso/text"
 	"go.uber.org/atomic"
@@ -281,11 +281,11 @@ func (c *Connection) handleLogin() (bool, error) {
 		return true, err
 	}
 	c.reader.Reader = cipher.StreamReader{
-		S: cfb8.NewCFB8Decrypt(block, sharedSecret),
+		S: encryption.NewCFB8Decrypt(block, sharedSecret),
 		R: c.conn,
 	}
 	c.writer.Writer = cipher.StreamWriter{
-		S: cfb8.NewCFB8Encrypt(block, sharedSecret),
+		S: encryption.NewCFB8Encrypt(block, sharedSecret),
 		W: c.conn,
 	}
 
