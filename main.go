@@ -68,10 +68,10 @@ func handleConnection(conn *expresso.Connection) {
 			// Write the column data for this specific chunk.
 			err = conn.WritePacket(&packet.ChunkData{Column: protocol.Column{
 				X: x, Z: z,
-				Chunks:       emptyChunks,
-				TileEntities: []map[string]interface{}{},
-				HeightMaps:   map[string]interface{}{},
-				Biomes:       emptyBiomeData,
+				Chunks:     emptyChunks,
+				Tiles:      []map[string]interface{}{},
+				HeightMaps: map[string]interface{}{},
+				Biomes:     emptyBiomeData,
 			}})
 		}
 	}

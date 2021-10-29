@@ -64,10 +64,10 @@ func (pk *ChunkData) Marshal(w *protocol.Writer) {
 	w.ByteSlice(&dataBytes)
 
 	// Tile entities.
-	tileEntitiesSize := int32(len(pk.Column.TileEntities))
+	tileEntitiesSize := int32(len(pk.Column.Tiles))
 	w.Varint32(&tileEntitiesSize)
 
-	for _, tileEntity := range pk.Column.TileEntities {
+	for _, tileEntity := range pk.Column.Tiles {
 		w.NBT(&tileEntity)
 	}
 }
@@ -120,8 +120,8 @@ func (pk *ChunkData) Unmarshal(r *protocol.Reader) {
 	var tileEntitiesSize int32
 	r.Varint32(&tileEntitiesSize)
 
-	pk.Column.TileEntities = make([]map[string]interface{}, tileEntitiesSize)
+	pk.Column.Tiles = make([]map[string]interface{}, tileEntitiesSize)
 	for i := 0; i < int(tileEntitiesSize); i++ {
-		r.NBT(&pk.Column.TileEntities[i])
+		r.NBT(&pk.Column.Tiles[i])
 	}
 }

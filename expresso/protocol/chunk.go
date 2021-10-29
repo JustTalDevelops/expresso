@@ -24,15 +24,15 @@ const (
 // Column represents a chunk column, which contains chunk data, the chunk position, biomes,
 // and other useful information for the client.
 type Column struct {
-	// X, Z are the chunk coordinates.
+	// X, Z are the column coordinates.
 	X, Z int32
-	// Chunks contain all Chunks associated with the column.
+	// Chunks contain all chunks associated with the column.
 	Chunks []*Chunk
-	// TileEntities contains all tile entities associated with the column.
-	TileEntities []map[string]interface{}
+	// Tiles contains all tile entities associated with the column.
+	Tiles []map[string]interface{}
 	// HeightMaps contains all height maps associated with the column.
 	HeightMaps map[string]interface{}
-	// Biomes contains all Biomes associated with the column.
+	// Biomes contains all biomes associated with the column.
 	Biomes []int32
 }
 
