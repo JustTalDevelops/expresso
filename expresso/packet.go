@@ -24,6 +24,7 @@ func (c *Connection) encode(pk decodedPacket) error {
 	w.Bytes(&pk.contents)
 
 	if c.Compression() {
+		// TODO: Fix compression on writing.
 		rawLen := buf.Len()
 		uncompressedLength := int32(rawLen)
 		if uncompressedLength > c.CompressionThreshold() {
