@@ -1,5 +1,8 @@
 package nbt
 
+// This package was taken from gophertunnel, a similar project in Go for Minecraft: Bedrock Edition.
+// https://github.com/Sandertv/gophertunnel
+
 import (
 	"math"
 	"reflect"
