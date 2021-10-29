@@ -62,6 +62,7 @@ func Listen(address string) (*Listener, error) {
 // Close closes the listener.
 func (l *Listener) Close() {
 	_ = l.listener.Close()
+	close(l.incoming)
 }
 
 // Accept accepts a new connection from the listener.
@@ -93,6 +94,4 @@ func (l *Listener) startListening() {
 		}
 		newConn(l, conn)
 	}
-
-	close(l.incoming)
 }
