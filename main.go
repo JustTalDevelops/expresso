@@ -89,7 +89,7 @@ func handleConnection(conn *expresso.Connection) {
 			fmt.Println("Reading packet...")
 			pk, err := conn.ReadPacket()
 			if err != nil {
-				break
+				panic(err)
 			}
 			fmt.Printf("%+v\n", pk)
 		}

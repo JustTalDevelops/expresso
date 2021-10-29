@@ -8,7 +8,7 @@ import (
 	"io"
 )
 
-// decodedPacket contains the id and contents of an encoded packet.
+// decodedPacket contains the id and contents of a decoded packet.
 type decodedPacket struct {
 	// id is the id of the packet.
 	id int32
@@ -24,7 +24,6 @@ func (c *Connection) encode(pk decodedPacket) error {
 	w.Bytes(&pk.contents)
 
 	if c.Compression() {
-		// TODO: Fix compression on writing.
 		rawLen := buf.Len()
 		uncompressedLength := int32(rawLen)
 		if uncompressedLength > c.CompressionThreshold() {
@@ -39,7 +38,7 @@ func (c *Connection) encode(pk decodedPacket) error {
 		newW := protocol.NewWriter(newBuf)
 		newW.Varint32(&uncompressedLength)
 
-		totalLength := int32(newBuf.Len() + rawLen)
+		totalLength := int32(newBuf.Len() + buf.Len())
 		c.writer.Varint32(&totalLength)
 		c.writer.Varint32(&uncompressedLength)
 

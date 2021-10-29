@@ -251,7 +251,7 @@ func (c *Connection) handlePing() (bool, error) {
 		}
 	}
 
-	c.updateState(packet.StateHandshaking())
+	c.Close()
 	return true, nil
 }
 
