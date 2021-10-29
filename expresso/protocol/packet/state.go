@@ -43,10 +43,17 @@ func StatePlay() State {
 
 // Packet finds a packet in the state. based on the target bound and ID.
 func (s State) Packet(bound Bound, id int32) Packet {
-	if bound == BoundClient() {
-		return s.clientBoundPackets[id]()
+	if s.clientBoundPackets[id] == nil && s.serverBoundPackets[id] == nil {
+		return nil
 	}
-	return s.serverBoundPackets[id]()
+
+	switch bound {
+	case BoundClient():
+		return s.clientBoundPackets[id]()
+	case BoundServer():
+		return s.serverBoundPackets[id]()
+	}
+	panic("should never happen")
 }
 
 type state byte

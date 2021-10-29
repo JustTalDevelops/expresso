@@ -5,6 +5,7 @@ import (
 	"github.com/justtaldevelops/expresso/expresso"
 	"github.com/justtaldevelops/expresso/expresso/protocol"
 	"github.com/justtaldevelops/expresso/expresso/protocol/packet"
+	"math"
 )
 
 func main() {
@@ -23,12 +24,7 @@ func main() {
 }
 
 func handleConnection(conn *expresso.Connection) {
-	emptyBiome := make([]int32, 1024)
-	for i := 0; i < 1024; i++ {
-		emptyBiome[i] = 1
-	}
-
-	fmt.Println("join game")
+	// Join the game client side.
 	err := conn.WritePacket(&packet.JoinGame{
 		Worlds:       []string{"minecraft:world"},
 		World:        "minecraft:world",
@@ -38,29 +34,56 @@ func handleConnection(conn *expresso.Connection) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("position rotation")
+
+	// Set the player's position and rotation.
 	err = conn.WritePacket(&packet.ServerPlayerPositionRotation{})
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("chunk data")
-	err = conn.WritePacket(&packet.ChunkData{Column: protocol.Column{
-		X: 0,
-		Z: 0,
-		Chunks: []*protocol.Chunk{
-			protocol.NewEmptyChunk(),
-		},
-		TileEntities: []map[string]interface{}{},
-		HeightMaps:   map[string]interface{}{},
-		Biomes:       emptyBiome,
-	}})
-	fmt.Println("update view position")
+
+	// Initialize empty biome data.
+	emptyBiomeData := make([]int32, 1024)
+	for i := 0; i < 1024; i++ {
+		emptyBiomeData[i] = 1
+	}
+
+	// Initialize empty chunks.
+	emptyChunks := make([]*protocol.Chunk, 256)
+	for i := 0; i < 256; i++ {
+		emptyChunks[i] = protocol.NewEmptyChunk()
+	}
+
+	// Send empty columns in a radius of sixteen.
+	radius := int32(16)
+	for x := -radius; x <= radius; x++ {
+		for z := -radius; z <= radius; z++ {
+			// Make sure we're in bounds.
+			distance := math.Sqrt(float64(x*x) + float64(z*z))
+			chunkDistance := int32(math.Round(distance))
+			if chunkDistance > radius {
+				// The column was outside the chunk radius.
+				continue
+			}
+
+			// Write the column data for this specific chunk.
+			err = conn.WritePacket(&packet.ChunkData{Column: protocol.Column{
+				X: x, Z: z,
+				Chunks:       emptyChunks,
+				TileEntities: []map[string]interface{}{},
+				HeightMaps:   map[string]interface{}{},
+				Biomes:       emptyBiomeData,
+			}})
+		}
+	}
+
+	// Update the player's viewing column.
 	err = conn.WritePacket(&packet.UpdateViewPosition{})
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Made it to the play phase!")
+	// The client should now be spawned in.
+	fmt.Println("We should be spawned in!")
 	go func() {
 		for {
 			fmt.Println("Reading packet...")
