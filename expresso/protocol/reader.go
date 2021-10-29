@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/justtaldevelops/expresso/expresso/nbt"
 	"github.com/justtaldevelops/expresso/expresso/text"
 	"io"
 	"io/ioutil"
@@ -34,7 +35,7 @@ func (r *Reader) Int16(x *int16) {
 		panic(err)
 	}
 
-	*x = int16(b[0]) << 8 | int16(b[1])
+	*x = int16(b[0])<<8 | int16(b[1])
 }
 
 // Int32 reads an int32 from the underlying buffer.
@@ -44,7 +45,7 @@ func (r *Reader) Int32(x *int32) {
 		panic(err)
 	}
 
-	*x = int32(b[0]) << 24 | int32(b[1]) << 16 | int32(b[2]) << 8 | int32(b[3])
+	*x = int32(b[0])<<24 | int32(b[1])<<16 | int32(b[2])<<8 | int32(b[3])
 }
 
 // Int64 reads an int64 from the underlying buffer.
@@ -55,19 +56,35 @@ func (r *Reader) Int64(x *int64) {
 	}
 
 	*x = int64(b[0])<<56 | int64(b[1])<<48 | int64(b[2])<<40 | int64(b[3])<<32 |
-		 int64(b[4])<<24 | int64(b[5])<<16 | int64(b[6])<<8 | int64(b[7])
+		int64(b[4])<<24 | int64(b[5])<<16 | int64(b[6])<<8 | int64(b[7])
+}
+
+// Float32 reads a float32 from the underlying buffer.
+func (r *Reader) Float32(x *float32) {
+	var v int32
+	r.Int32(&v)
+
+	*x = math.Float32frombits(uint32(v))
+}
+
+// Float64 reads a float64 from the underlying buffer.
+func (r *Reader) Float64(x *float64) {
+	var v int64
+	r.Int64(&v)
+
+	*x = math.Float64frombits(uint64(v))
 }
 
 // Varint32 reads a variable int32 from the underlying buffer.
 func (r *Reader) Varint32(x *int32) {
 	var varInt uint32
-	for size, sec := 0, byte(0x80); sec & 0x80 != 0; size++ {
+	for size, sec := 0, byte(0x80); sec&0x80 != 0; size++ {
 		if size > 5 {
 			panic("varint is too big")
 		}
 
 		r.Uint8(&sec)
-		varInt |= uint32(sec & 0x7F) << uint32(7 * size)
+		varInt |= uint32(sec&0x7F) << uint32(7*size)
 	}
 
 	*x = int32(varInt)
@@ -76,13 +93,13 @@ func (r *Reader) Varint32(x *int32) {
 // Varint64 reads a variable int64 from the underlying buffer.
 func (r *Reader) Varint64(x *int64) {
 	var varInt uint64
-	for size, sec := 0, byte(0x80); sec & 0x80 != 0; size++ {
+	for size, sec := 0, byte(0x80); sec&0x80 != 0; size++ {
 		if size >= 10 {
 			panic("varlong is too big")
 		}
 
 		r.Uint8(&sec)
-		varInt |= uint64(sec & 0x7F) << uint64(7 * size)
+		varInt |= uint64(sec&0x7F) << uint64(7*size)
 	}
 
 	*x = int64(varInt)
@@ -149,4 +166,41 @@ func (r *Reader) Text(x *text.Text) {
 	r.String(&s)
 
 	_ = json.Unmarshal([]byte(s), x)
+}
+
+// Chunk reads a chunk from the underlying buffer.
+func (r *Reader) Chunk(x *Chunk) {
+	var blockCount int16
+	r.Int16(&blockCount)
+
+	var bitsPerEntry byte
+	r.Uint8(&bitsPerEntry)
+
+	palette := readPalette(int32(bitsPerEntry), r)
+
+	var dataSize int32
+	r.Varint32(&dataSize)
+
+	data := make([]int64, dataSize)
+	for i := int32(0); i < dataSize; i++ {
+		r.Int64(&data[i])
+	}
+
+	storage, err := NewBitStorageWithData(int32(bitsPerEntry), chunkSize, data)
+	if err != nil {
+		panic(err)
+	}
+
+	*x = Chunk{
+		blockCount: int32(blockCount),
+		palette:    palette,
+		storage:    storage,
+	}
+}
+
+// NBT reads a map as a compound tag from the underlying buffer.
+func (r *Reader) NBT(x *map[string]interface{}) {
+	if err := nbt.NewDecoderWithEncoding(r, nbt.BigEndian).Decode(x); err != nil {
+		panic(err)
+	}
 }

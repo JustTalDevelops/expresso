@@ -3,8 +3,10 @@ package protocol
 import (
 	"encoding/json"
 	"github.com/google/uuid"
+	"github.com/justtaldevelops/expresso/expresso/nbt"
 	"github.com/justtaldevelops/expresso/expresso/text"
 	"io"
+	"math"
 )
 
 // Writer is an instance of a protocol writer.
@@ -41,6 +43,18 @@ func (w *Writer) Int64(x *int64) {
 		byte(i >> 56), byte(i >> 48), byte(i >> 40), byte(i >> 32),
 		byte(i >> 24), byte(i >> 16), byte(i >> 8), byte(i),
 	})
+}
+
+// Float32 writes a float32 to the underlying buffer.
+func (w *Writer) Float32(x *float32) {
+	bits := int32(math.Float32bits(*x))
+	w.Int32(&bits)
+}
+
+// Float64 writes a float64 to the underlying buffer.
+func (w *Writer) Float64(x *float64) {
+	bits := int64(math.Float64bits(*x))
+	w.Int64(&bits)
 }
 
 // Varint32 writes a variable int32 to the underlying buffer.
@@ -120,4 +134,38 @@ func (w *Writer) Text(x *text.Text) {
 	b, _ := json.Marshal(*x)
 	s := string(b)
 	w.String(&s)
+}
+
+// Chunk writes a chunk to the underlying buffer.
+func (w *Writer) Chunk(x *Chunk) {
+	blockCount := int16(x.blockCount)
+	bitsPerEntry := uint8(x.storage.bitsPerEntry)
+
+	w.Int16(&blockCount)
+	w.Uint8(&bitsPerEntry)
+
+	if _, ok := x.palette.(*GlobalPalette); !ok {
+		paletteLength := x.palette.Size()
+		w.Varint32(&paletteLength)
+
+		for i := int32(0); i < paletteLength; i++ {
+			state, _ := x.palette.IDToState(i)
+			w.Varint32(&state)
+		}
+	}
+
+	data := x.storage.data
+	dataLength := int32(len(data))
+
+	w.Varint32(&dataLength)
+	for _, v := range data {
+		w.Int64(&v)
+	}
+}
+
+// NBT writes a map as a compound tag to the underlying buffer.
+func (w *Writer) NBT(x *map[string]interface{}) {
+	if err := nbt.NewEncoderWithEncoding(w, nbt.BigEndian).Encode(*x); err != nil {
+		panic(err)
+	}
 }
