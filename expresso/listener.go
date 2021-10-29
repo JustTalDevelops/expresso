@@ -18,9 +18,9 @@ type Listener struct {
 
 	incoming chan *Connection
 
-	status   atomic.Value
+	status atomic.Value
 
-	keyPair  *rsa.PrivateKey
+	keyPair     *rsa.PrivateKey
 	verifyToken []byte
 }
 
@@ -42,14 +42,14 @@ func Listen(address string) (*Listener, error) {
 	list := &Listener{address: address, listener: l, keyPair: key, verifyToken: token, incoming: make(chan *Connection)}
 	list.status.Store(Status{
 		Version: Version{
-			Name: protocol.CurrentVersion,
+			Name:     protocol.CurrentVersion,
 			Protocol: protocol.CurrentProtocol,
 		},
 		Players: Players{Online: 9, Max: 10, Sample: []Player{}},
 		Description: text.Text{
-			Text: "An Expresso Listener",
-			Color: "gold",
-			Bold: true,
+			Text:   "An Expresso Listener",
+			Color:  "gold",
+			Bold:   true,
 			Italic: true,
 		},
 	})
@@ -62,7 +62,6 @@ func Listen(address string) (*Listener, error) {
 // Close closes the listener.
 func (l *Listener) Close() {
 	_ = l.listener.Close()
-	close(l.incoming)
 }
 
 // Accept accepts a new connection from the listener.
@@ -92,6 +91,8 @@ func (l *Listener) startListening() {
 		if err != nil {
 			break
 		}
-		newConn(l,  conn)
+		newConn(l, conn)
 	}
+
+	close(l.incoming)
 }
