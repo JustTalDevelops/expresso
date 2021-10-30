@@ -26,14 +26,14 @@ func (w *Writer) Uint8(x *uint8) {
 
 // Int16 writes an int16 to the underlying buffer.
 func (w *Writer) Int16(x *int16) {
-	i := uint16(*x)
-	_, _ = w.Write([]byte{byte(i >> 8), byte(i)})
+	i := *x
+	_, _ = w.Write([]byte{byte((i >> 8) & 0xFF), byte((i >> 0) & 0xFF)})
 }
 
 // Int32 writes an int32 to the underlying buffer.
 func (w *Writer) Int32(x *int32) {
-	i := uint32(*x)
-	_, _ = w.Write([]byte{byte(i >> 24), byte(i >> 16), byte(i >> 8), byte(i)})
+	i := *x
+	_, _ = w.Write([]byte{byte((i >> 24) & 0xFF), byte((i >> 16) & 0xFF), byte((i >> 8) & 0xFF), byte((i >> 0) & 0xFF)})
 }
 
 // Int64 writes an int64 to the underlying buffer.
@@ -41,7 +41,7 @@ func (w *Writer) Int64(x *int64) {
 	i := *x
 	_, _ = w.Write([]byte{
 		byte(i >> 56), byte(i >> 48), byte(i >> 40), byte(i >> 32),
-		byte(i >> 24), byte(i >> 16), byte(i >> 8), byte(i),
+		byte(i >> 24), byte(i >> 16), byte(i >> 8), byte(i >> 0),
 	})
 }
 
@@ -59,40 +59,24 @@ func (w *Writer) Float64(x *float64) {
 
 // Varint32 writes a variable int32 to the underlying buffer.
 func (w *Writer) Varint32(x *int32) {
-	varInt := make([]byte, 0, 5)
-	num := uint32(*x)
-	for {
-		b := num & 0x7F
-		num >>= 7
-		if num != 0 {
-			b |= 0x80
-		}
-		varInt = append(varInt, byte(b))
-		if num == 0 {
-			break
-		}
+	i := *x
+	for (i & -128) != 0 {
+		_, _ = w.Write([]byte{byte(i&127 | 128)})
+		i >>= 7
 	}
 
-	_, _ = w.Write(varInt)
+	_, _ = w.Write([]byte{byte(i)})
 }
 
 // Varint64 writes a variable int64 to the underlying buffer.
 func (w *Writer) Varint64(x *int64) {
-	varInt := make([]byte, 0, 10)
-	num := uint64(*x)
-	for {
-		b := num & 0x7F
-		num >>= 7
-		if num != 0 {
-			b |= 0x80
-		}
-		varInt = append(varInt, byte(b))
-		if num == 0 {
-			break
-		}
+	l := *x
+	for (l & int64(-128)) != int64(0) {
+		_, _ = w.Write([]byte{byte(int(l&int64(127)) | 128)})
+		l >>= 7
 	}
 
-	_, _ = w.Write(varInt)
+	_, _ = w.Write([]byte{byte(int(l))})
 }
 
 // Bytes appends a []byte to the underlying buffer.

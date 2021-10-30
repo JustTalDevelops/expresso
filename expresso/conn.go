@@ -14,6 +14,7 @@ import (
 	"github.com/justtaldevelops/expresso/expresso/text"
 	"go.uber.org/atomic"
 	"net"
+	"sync"
 	"time"
 )
 
@@ -32,6 +33,8 @@ type Connection struct {
 
 	reader *protocol.Reader
 	writer *protocol.Writer
+
+	readMu, writeMu sync.Mutex
 }
 
 // defaultCompressionThreshold is always 256.

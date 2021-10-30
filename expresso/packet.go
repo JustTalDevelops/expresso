@@ -18,6 +18,9 @@ type decodedPacket struct {
 
 // encode writes and encodes a packet to the connection from a decodedPacket.
 func (c *Connection) encode(pk decodedPacket) error {
+	c.writeMu.Lock()
+	defer c.writeMu.Unlock()
+
 	buf := &bytes.Buffer{}
 	w := protocol.NewWriter(buf)
 	w.Varint32(&pk.id)
@@ -59,6 +62,9 @@ func (c *Connection) encode(pk decodedPacket) error {
 
 // decode reads and then decodes a packet from the connection into a decodedPacket.
 func (c *Connection) decode() (pk decodedPacket, err error) {
+	c.readMu.Lock()
+	defer c.readMu.Unlock()
+
 	// Read all packet data.
 	var length int32
 	c.reader.Varint32(&length)
