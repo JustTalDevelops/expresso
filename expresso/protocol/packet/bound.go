@@ -1,23 +1,23 @@
 package packet
 
-// Bound represents which receiver the packet is bound to.
-type Bound struct {
-	bound
+// Direction represents what direction a packet is going.
+type Direction struct {
+	direction
 }
 
-// BoundClient is used when the packet is meant for clients.
-func BoundClient() Bound {
-	return Bound{bound: boundClient}
+// DirectionServer is used when the packet is meant for servers.
+func DirectionServer() Direction {
+	return Direction{direction: directionServer}
 }
 
-// BoundServer is used when the packet is meant for servers.
-func BoundServer() Bound {
-	return Bound{bound: boundServer}
+// DirectionClient is used when the packet is meant for clients.
+func DirectionClient() Direction {
+	return Direction{direction: directionClient}
 }
 
-type bound byte
+type direction byte
 
 const (
-	boundClient bound = iota
-	boundServer
+	directionServer direction = iota
+	directionClient
 )

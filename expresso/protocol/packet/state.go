@@ -41,16 +41,16 @@ func StatePlay() State {
 	}
 }
 
-// Packet finds a packet in the state. based on the target bound and ID.
-func (s State) Packet(bound Bound, id int32) Packet {
+// Packet finds a packet in the state. based on the target direction and ID.
+func (s State) Packet(direction Direction, id int32) Packet {
 	if s.clientBoundPackets[id] == nil && s.serverBoundPackets[id] == nil {
 		return nil
 	}
 
-	switch bound {
-	case BoundClient():
+	switch direction {
+	case DirectionServer():
 		return s.clientBoundPackets[id]()
-	case BoundServer():
+	case DirectionClient():
 		return s.serverBoundPackets[id]()
 	}
 	panic("should never happen")

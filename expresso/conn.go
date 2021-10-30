@@ -75,7 +75,7 @@ func (c *Connection) WritePacket(pk packet.Packet) error {
 	if c.closed.Load() {
 		return fmt.Errorf("write packet: connection closed")
 	}
-	if c.state().Packet(packet.BoundClient(), pk.ID()) == nil {
+	if c.state().Packet(packet.DirectionServer(), pk.ID()) == nil {
 		return fmt.Errorf("packet does not exist in current state")
 	}
 
@@ -130,7 +130,7 @@ func (c *Connection) readPacket() (packet.Packet, error) {
 	}
 
 	// Unmarshal it into a packet.
-	pk := c.state().Packet(packet.BoundServer(), dec.id)
+	pk := c.state().Packet(packet.DirectionClient(), dec.id)
 	if pk == nil {
 		// TODO: Log that there was an unhandled packet
 		return c.readPacket()
