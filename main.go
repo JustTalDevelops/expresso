@@ -48,8 +48,8 @@ func handleConnection(conn *expresso.Connection) {
 	}
 
 	// Initialize empty chunks.
-	emptyChunks := make([]*protocol.Chunk, 256)
-	for i := 0; i < 256; i++ {
+	emptyChunks := make([]*protocol.Chunk, 16)
+	for i := 0; i < 16; i++ {
 		emptyChunks[i] = protocol.NewEmptyChunk()
 	}
 
