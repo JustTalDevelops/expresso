@@ -132,10 +132,12 @@ func (w *Writer) Chunk(x *Chunk) {
 	if _, ok := x.palette.(*GlobalPalette); !ok {
 		fmt.Printf("not global palette! %T\n", x.palette)
 		paletteLength := x.palette.Size()
+		fmt.Println("Size:", paletteLength)
 		w.Varint32(&paletteLength)
 
 		for i := int32(0); i < paletteLength; i++ {
 			state := x.palette.IDToState(i)
+			fmt.Println("State:", state)
 			w.Varint32(&state)
 		}
 	}

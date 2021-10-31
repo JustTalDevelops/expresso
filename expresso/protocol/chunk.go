@@ -3,10 +3,6 @@ package protocol
 // This has effectively been ported from Geyser's MCProtocolLib. Thanks a ton!
 // https://github.com/GeyserMC/MCProtocolLib
 
-import (
-	"math"
-)
-
 const (
 	// air is the ID of the air block.
 	air = 0
@@ -67,7 +63,6 @@ func (c *Chunk) Set(x, y, z, state int32) error {
 	id := c.palette.StateToID(state)
 	if id == -1 {
 		c.resizePalette()
-
 		id = c.palette.StateToID(state)
 	}
 
@@ -108,7 +103,10 @@ func (c *Chunk) resizePalette() {
 // sanitizeBitsPerEntry sanitizes the bits per entry of the palette.
 func sanitizeBitsPerEntry(bitsPerEntry int32) int32 {
 	if bitsPerEntry <= maximumPaletteBitsPerEntry {
-		return int32(math.Max(minimumPaletteBitsPerEntry, float64(bitsPerEntry)))
+		if bitsPerEntry < minimumPaletteBitsPerEntry {
+			return minimumPaletteBitsPerEntry
+		}
+		return bitsPerEntry
 	} else {
 		return globalPaletteBitsPerEntry
 	}
@@ -116,7 +114,7 @@ func sanitizeBitsPerEntry(bitsPerEntry int32) int32 {
 
 // createPalette creates a new palette with the given number of bits per entry.
 func createPalette(bitsPerEntry int32) Palette {
-	if bitsPerEntry <= maximumPaletteBitsPerEntry {
+	if bitsPerEntry <= minimumPaletteBitsPerEntry {
 		return NewListPalette(bitsPerEntry)
 	} else if bitsPerEntry <= maximumPaletteBitsPerEntry {
 		return NewMapPalette(bitsPerEntry)
