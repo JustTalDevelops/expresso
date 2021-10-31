@@ -324,7 +324,7 @@ func (c *Connection) handleLogin() (bool, error) {
 		W: c.conn,
 	}
 
-	// Set default compression.
+	// Set the default compression.
 	err = c.UpdateCompressionThreshold(defaultCompressionThreshold)
 	if err != nil {
 		return true, err

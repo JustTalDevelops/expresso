@@ -1,7 +1,5 @@
 package protocol
 
-import "fmt"
-
 // This has effectively been ported from Geyser's MCProtocolLib. Thanks a ton!
 // https://github.com/GeyserMC/MCProtocolLib
 
@@ -10,11 +8,11 @@ const (
 	air = 0
 	// chunkSize contains all blocks that are in a chunk.
 	chunkSize = 4096
-	// minimumPaletteBitsPerEntry is the minimum number of bits per entry in the palette.
+	// minimumPaletteBitsPerEntry is the minimum number of bitsPerEntry per entry in the palette.
 	minimumPaletteBitsPerEntry = 4
-	// maximumPaletteBitsPerEntry is the maximum number of bits per entry in the palette.
+	// maximumPaletteBitsPerEntry is the maximum number of bitsPerEntry per entry in the palette.
 	maximumPaletteBitsPerEntry = 8
-	// globalPaletteBitsPerEntry is the number of bits per entry in the global palette.
+	// globalPaletteBitsPerEntry is the number of bitsPerEntry per entry in the global palette.
 	globalPaletteBitsPerEntry = 14
 )
 
@@ -65,7 +63,6 @@ func (c *Chunk) Set(x, y, z, state int32) error {
 		c.blockCount--
 	}
 
-	fmt.Printf("Set: %v to %v\n", ind, id)
 	return c.storage.Set(ind, id)
 }
 
@@ -88,7 +85,7 @@ func (c *Chunk) resizePalette() {
 	c.palette, c.storage = newPalette, newStorage
 }
 
-// sanitizeBitsPerEntry sanitizes the bits per entry of the palette.
+// sanitizeBitsPerEntry sanitizes the bitsPerEntry per entry of the palette.
 func sanitizeBitsPerEntry(bitsPerEntry int32) int32 {
 	if bitsPerEntry <= maximumPaletteBitsPerEntry {
 		if bitsPerEntry < minimumPaletteBitsPerEntry {
@@ -100,7 +97,7 @@ func sanitizeBitsPerEntry(bitsPerEntry int32) int32 {
 	}
 }
 
-// createPalette creates a new palette with the given number of bits per entry.
+// createPalette creates a new palette with the given number of bitsPerEntry per entry.
 func createPalette(bitsPerEntry int32) Palette {
 	if bitsPerEntry <= minimumPaletteBitsPerEntry {
 		return NewListPalette(bitsPerEntry)

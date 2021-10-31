@@ -33,8 +33,8 @@ func NewColumn(pos ColumnPos) *Column {
 	}
 }
 
-// Get returns the state ID of a block position.
-func (c *Column) Get(pos BlockPos) (int32, error) {
+// GetBlockState returns the state ID of a block position.
+func (c *Column) GetBlockState(pos BlockPos) (int32, error) {
 	chunk := c.Chunks[pos.Y()>>4]
 	if chunk == nil || chunk.Empty() {
 		// The chunk is empty or does not exist, so the block is air.
@@ -45,8 +45,8 @@ func (c *Column) Get(pos BlockPos) (int32, error) {
 	return chunk.Get(pos.X(), pos.Y()&15, pos.Z())
 }
 
-// Set sets the state ID of a block position.
-func (c *Column) Set(pos BlockPos, state int32) error {
+// SetBlockState sets the state ID of a block position.
+func (c *Column) SetBlockState(pos BlockPos, state int32) error {
 	chunkIndex := pos.Y() >> 4
 	if chunkIndex < 0 || chunkIndex >= 16 {
 		return fmt.Errorf("invalid chunk index")

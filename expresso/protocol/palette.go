@@ -58,8 +58,9 @@ func NewListPalette(bitsPerEntry int32) *ListPalette {
 	maxId := int32((1 << bitsPerEntry) - 1)
 
 	return &ListPalette{
-		maxId: maxId,
-		data:  make([]int32, maxId+1),
+		nextId: 1,
+		maxId:  maxId,
+		data:   make([]int32, maxId+1),
 	}
 }
 
@@ -95,10 +96,10 @@ func (p *ListPalette) StateToID(state int32) (id int32) {
 	}
 
 	if id == -1 && p.Size() < p.maxId+1 {
-		p.nextId++
-
 		id = p.nextId
 		p.data[id] = state
+
+		p.nextId++
 	}
 
 	return id
@@ -132,6 +133,7 @@ func NewMapPalette(bitsPerEntry int32) *MapPalette {
 	maxId := int32((1 << bitsPerEntry) - 1)
 
 	return &MapPalette{
+		nextId:    1,
 		maxId:     maxId,
 		idToState: make([]int32, maxId+1),
 		stateToID: make(map[int32]int32),
@@ -167,9 +169,9 @@ func (p *MapPalette) Size() int32 {
 func (p *MapPalette) StateToID(state int32) int32 {
 	id, ok := p.stateToID[state]
 	if !ok && p.Size() < p.maxId+1 {
-		p.nextId++
-
 		id, ok = p.nextId, true
+
+		p.nextId++
 		p.idToState[id] = state
 		p.stateToID[state] = id
 	}
