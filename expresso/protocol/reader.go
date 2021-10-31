@@ -77,32 +77,32 @@ func (r *Reader) Float64(x *float64) {
 
 // Varint32 reads a variable int32 from the underlying buffer.
 func (r *Reader) Varint32(x *int32) {
-	var varInt uint32
+	var varInt int32
 	for size, sec := 0, byte(0x80); sec&0x80 != 0; size++ {
 		if size > 5 {
 			panic("varint is too big")
 		}
 
 		r.Uint8(&sec)
-		varInt |= uint32(sec&0x7F) << uint32(7*size)
+		varInt |= int32(sec&0x7F) << int32(7*size)
 	}
 
-	*x = int32(varInt)
+	*x = varInt
 }
 
 // Varint64 reads a variable int64 from the underlying buffer.
 func (r *Reader) Varint64(x *int64) {
-	var varInt uint64
+	var varInt int64
 	for size, sec := 0, byte(0x80); sec&0x80 != 0; size++ {
 		if size >= 10 {
 			panic("varlong is too big")
 		}
 
 		r.Uint8(&sec)
-		varInt |= uint64(sec&0x7F) << uint64(7*size)
+		varInt |= int64(sec&0x7F) << int64(7*size)
 	}
 
-	*x = int64(varInt)
+	*x = varInt
 }
 
 // Bytes reads all remaining bytes in the reader.
