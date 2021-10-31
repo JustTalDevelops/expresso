@@ -1,6 +1,7 @@
 package protocol
 
 // This has effectively been copied from go-mc. Many thanks for their work.
+// https://github.com/Tnze/go-mc
 
 import (
 	"fmt"
