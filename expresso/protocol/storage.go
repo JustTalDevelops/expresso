@@ -64,6 +64,10 @@ func NewEmptyBitStorage(bitsPerEntry int32, size int32) *BitStorage {
 
 // NewBitStorageWithData creates a new BitStorage instance with the provided data.
 func NewBitStorageWithData(bitsPerEntry int32, size int32, data []int64) (*BitStorage, error) {
+	if bitsPerEntry < 1 || bitsPerEntry > 32 {
+		return nil, fmt.Errorf("bitsPerEntry must be between one and thirty-two, got %v", bitsPerEntry)
+	}
+
 	storage := &BitStorage{
 		bitsPerEntry:   bitsPerEntry,
 		size:           size,
@@ -121,7 +125,7 @@ func (b *BitStorage) Set(index int32, value int32) error {
 
 // cellIndex uses the data in the BitStorage to get the cell index of the given index.
 func (b *BitStorage) cellIndex(index int32) int32 {
-	return int32(int64(index)*b.divideMultiply + b.divideAdd>>32>>b.divideShift)
+	return int32(int64(index)*b.divideMultiply + b.divideAdd>>32>>int64(b.divideShift))
 }
 
 // bitIndex uses the data in the BitStorage to get the bit index for the provided index and cellIndex.
