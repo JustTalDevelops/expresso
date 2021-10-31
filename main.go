@@ -5,7 +5,6 @@ import (
 	"github.com/justtaldevelops/expresso/expresso"
 	"github.com/justtaldevelops/expresso/expresso/protocol"
 	"github.com/justtaldevelops/expresso/expresso/protocol/packet"
-	"math"
 )
 
 func main() {
@@ -26,10 +25,12 @@ func main() {
 func handleConnection(conn *expresso.Connection) {
 	// Join the game client side.
 	err := conn.WritePacket(&packet.JoinGame{
-		Worlds:       []string{"minecraft:world"},
-		World:        "minecraft:world",
-		HashedSeed:   100,
-		ViewDistance: 16,
+		GameMode:         1,
+		PreviousGameMode: 1,
+		Worlds:           []string{"minecraft:world"},
+		World:            "minecraft:world",
+		HashedSeed:       100,
+		ViewDistance:     16,
 	})
 	if err != nil {
 		panic(err)
@@ -47,34 +48,41 @@ func handleConnection(conn *expresso.Connection) {
 		emptyBiomeData[i] = 1
 	}
 
-	// Initialize empty chunks.
-	emptyChunks := make([]*protocol.Chunk, 16)
-	for i := 0; i < 16; i++ {
-		emptyChunks[i] = protocol.NewEmptyChunk()
+	chunk := protocol.NewEmptyChunk()
+	err = chunk.Set(0, 0, 0, 10)
+	if err != nil {
+		panic(err)
 	}
 
-	// Send empty columns in a radius of sixteen.
-	radius := int32(16)
-	for x := -radius; x <= radius; x++ {
-		for z := -radius; z <= radius; z++ {
-			// Make sure we're in bounds.
-			distance := math.Sqrt(float64(x*x) + float64(z*z))
-			chunkDistance := int32(math.Round(distance))
-			if chunkDistance > radius {
-				// The column was outside the chunk radius.
-				continue
-			}
+	// Write the column data for this specific chunk.
+	err = conn.WritePacket(&packet.ChunkData{Column: protocol.Column{
+		X: 0, Z: 0,
+		Chunks: []*protocol.Chunk{
+			nil, nil, nil, nil, nil, nil, nil, chunk, nil, chunk, nil, nil, nil, chunk,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil,
+		},
+		Tiles:      []map[string]interface{}{},
+		HeightMaps: map[string]interface{}{},
+		Biomes:     emptyBiomeData,
+	}})
 
-			// Write the column data for this specific chunk.
-			err = conn.WritePacket(&packet.ChunkData{Column: protocol.Column{
-				X: x, Z: z,
-				Chunks:     emptyChunks,
-				Tiles:      []map[string]interface{}{},
-				HeightMaps: map[string]interface{}{},
-				Biomes:     emptyBiomeData,
-			}})
-		}
-	}
+	// Write the column data for this specific chunk x2.
+	err = conn.WritePacket(&packet.ChunkData{Column: protocol.Column{
+		X: 1, Z: 1,
+		Chunks: []*protocol.Chunk{
+			chunk, chunk, chunk, chunk, chunk, chunk, chunk, chunk, chunk, chunk,
+			chunk, chunk, chunk, chunk, chunk, chunk, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		},
+		Tiles:      []map[string]interface{}{},
+		HeightMaps: map[string]interface{}{},
+		Biomes:     emptyBiomeData,
+	}})
 
 	// Update the player's viewing column.
 	err = conn.WritePacket(&packet.UpdateViewPosition{})
@@ -89,7 +97,7 @@ func handleConnection(conn *expresso.Connection) {
 			fmt.Println("Reading packet...")
 			pk, err := conn.ReadPacket()
 			if err != nil {
-				panic(err)
+				break
 			}
 			fmt.Printf("%+v\n", pk)
 		}

@@ -27,7 +27,7 @@ func (pk *ChunkData) Marshal(w *protocol.Writer) {
 
 	for index := 0; index < len(pk.Column.Chunks); index++ {
 		chunk := pk.Column.Chunks[index]
-		if !chunk.Empty() {
+		if chunk != nil && !chunk.Empty() {
 			bitSet.Set(uint(index))
 			dataWriter.Chunk(chunk)
 		}
