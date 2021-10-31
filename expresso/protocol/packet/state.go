@@ -11,34 +11,22 @@ type State struct {
 
 // StateHandshaking represents the handshaking state.
 func StateHandshaking() State {
-	return State{
-		packetCollection: handshakingCollection,
-		state:            stateHandshaking,
-	}
+	return State{state: stateHandshaking, packetCollection: handshakingCollection}
 }
 
 // StateStatus represents the status state.
 func StateStatus() State {
-	return State{
-		packetCollection: statusCollection,
-		state:            stateStatus,
-	}
+	return State{state: stateStatus, packetCollection: statusCollection}
 }
 
 // StateLogin represents the login state.
 func StateLogin() State {
-	return State{
-		packetCollection: loginCollection,
-		state:            stateLogin,
-	}
+	return State{state: stateLogin, packetCollection: loginCollection}
 }
 
 // StatePlay represents the play state.
 func StatePlay() State {
-	return State{
-		packetCollection: playCollection,
-		state:            statePlay,
-	}
+	return State{state: statePlay, packetCollection: playCollection}
 }
 
 // Packet finds a packet in the state. based on the target direction and ID.
