@@ -43,8 +43,8 @@ func handleConnection(conn *expresso.Connection) {
 	}
 
 	// Initialize a new column.
-	column := protocol.NewColumn(protocol.ColumnPosition{0, 0})
-	err = column.Set(0, 1, 0, 10)
+	column := protocol.NewColumn(protocol.ColumnPos{0, 0})
+	err = column.Set(protocol.BlockPos{0, 1, 0}, 10)
 	if err != nil {
 		panic(err)
 	}
