@@ -60,8 +60,8 @@ func (w *Writer) Float64(x *float64) {
 // Varint32 writes a variable int32 to the underlying buffer.
 func (w *Writer) Varint32(x *int32) {
 	i := *x
-	for (i & -128) != 0 {
-		_, _ = w.Write([]byte{byte(i&127 | 128)})
+	for (i & ^0x7F) != 0 {
+		_, _ = w.Write([]byte{byte((i & 0x7F) | 0x80)})
 		i >>= 7
 	}
 
@@ -71,8 +71,8 @@ func (w *Writer) Varint32(x *int32) {
 // Varint64 writes a variable int64 to the underlying buffer.
 func (w *Writer) Varint64(x *int64) {
 	l := *x
-	for (l & int64(-128)) != int64(0) {
-		_, _ = w.Write([]byte{byte(int(l&int64(127)) | 128)})
+	for (l & ^0x7F) != 0 {
+		_, _ = w.Write([]byte{byte(int(l&0x7F) | 0x80)})
 		l >>= 7
 	}
 
