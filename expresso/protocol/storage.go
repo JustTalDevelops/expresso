@@ -8,7 +8,7 @@ import (
 	"math"
 )
 
-// BitStorage implements the compacted data storage used in chunks since Minecraft v1.16.
+// BitStorage implements the compacted data storage format used in chunks since Minecraft v1.16.
 // https://wiki.vg/Chunk_Format
 type BitStorage struct {
 	data []int64
