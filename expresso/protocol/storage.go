@@ -36,18 +36,19 @@ func NewBitStorageWithData(bitsPerEntry int32, size int32, data []int64) (*BitSt
 		size:           size,
 		valuesPerEntry: 64 / bitsPerEntry,
 	}
-	dataLen := (size + storage.valuesPerEntry - 1) / storage.valuesPerEntry
-	if data != nil {
-		otherLength := int32(len(data))
-		if otherLength != dataLen {
-			return nil, fmt.Errorf("invalid data length of %v, expected %v", dataLen, otherLength)
-		}
 
-		storage.data = data
-	} else {
+	dataLen := (size + storage.valuesPerEntry - 1) / storage.valuesPerEntry
+	if data == nil {
 		storage.data = make([]int64, dataLen)
+		return storage, nil
 	}
 
+	otherLength := int32(len(data))
+	if otherLength != dataLen {
+		return nil, fmt.Errorf("invalid data length of %v, expected %v", dataLen, otherLength)
+	}
+
+	storage.data = data
 	return storage, nil
 }
 
