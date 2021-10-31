@@ -3,6 +3,7 @@ package text
 import "encoding/json"
 
 // Text represents the custom JSON text format in Minecraft.
+// TODO: Add options to make creating this type of text simple.
 type Text struct {
 	Text string `json:"text,omitempty"`
 
