@@ -32,7 +32,7 @@ var magicValues = []int32{
 	0, 5,
 }
 
-// BitStorage implements the compacted data storage used in Chunks used since Minecraft v1.16.
+// BitStorage implements the compacted data storage used in chunks since Minecraft v1.16.
 // https://wiki.vg/Chunk_Format
 type BitStorage struct {
 	// data is the underlying data storage.
