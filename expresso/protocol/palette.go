@@ -12,11 +12,10 @@ type Palette interface {
 	// Size returns the known number of block states in the palette.
 	Size() int32
 	// StateToID converts the block state to a storage ID. If it is not mapped, then the palette will attempt
-	// to map it. If all else fails, it will return false as it's second return value.
-	StateToID(state int32) (int32, bool)
-	// IDToState converts the storage ID to a block state. If it is not mapped, then it will return false as
-	// it's second return value.
-	IDToState(id int32) (int32, bool)
+	// to map it. If all else fails, it will return -1.
+	StateToID(state int32) int32
+	// IDToState converts the storage ID to a block state. If it is not mapped, then it will return -1.
+	IDToState(id int32) int32
 }
 
 // GlobalPalette is a global palette that maps one to one.
@@ -34,14 +33,14 @@ func (*GlobalPalette) Size() int32 {
 
 // StateToID converts the block state to a storage ID. If it is not mapped, then the palette will attempt
 // to map it. If all else fails, it will return false as it's second return value.
-func (*GlobalPalette) StateToID(state int32) (int32, bool) {
-	return state, true
+func (*GlobalPalette) StateToID(state int32) int32 {
+	return state
 }
 
 // IDToState converts the storage ID to a block state. If it is not mapped, then it will return false as
 // it's second return value.
-func (*GlobalPalette) IDToState(id int32) (int32, bool) {
-	return id, true
+func (*GlobalPalette) IDToState(id int32) int32 {
+	return id
 }
 
 // ListPalette is a palette backed by a list.
@@ -81,36 +80,37 @@ func NewListPaletteFromReader(bitsPerEntry int32, reader *Reader) *ListPalette {
 
 // Size returns the known number of block states in the palette.
 func (p *ListPalette) Size() int32 {
-	return p.maxId
+	return p.nextId
 }
 
 // StateToID converts the block state to a storage ID. If it is not mapped, then the palette will attempt
 // to map it. If all else fails, it will return false as it's second return value.
-func (p *ListPalette) StateToID(state int32) (id int32, ok bool) {
+func (p *ListPalette) StateToID(state int32) (id int32) {
+	id = -1
 	for i := int32(0); i < p.nextId; i++ {
 		if p.data[i] == state {
-			id, ok = i, true
+			id = i
 			break
 		}
 	}
 
-	if !ok && p.Size() < p.maxId+1 {
+	if id == -1 && p.Size() < p.maxId+1 {
 		p.nextId++
 
-		id, ok = p.nextId, true
+		id = p.nextId
 		p.data[id] = state
 	}
 
-	return id, ok
+	return id
 }
 
 // IDToState converts the storage ID to a block state. If it is not mapped, then it will return false as
 // it's second return value.
-func (p *ListPalette) IDToState(id int32) (state int32, ok bool) {
+func (p *ListPalette) IDToState(id int32) int32 {
 	if id >= 0 && id < p.Size() {
-		return p.data[id], true
+		return p.data[id]
 	} else {
-		return 0, false
+		return 0
 	}
 }
 
@@ -164,9 +164,8 @@ func (p *MapPalette) Size() int32 {
 
 // StateToID converts the block state to a storage ID. If it is not mapped, then the palette will attempt
 // to map it. If all else fails, it will return false as it's second return value.
-func (p *MapPalette) StateToID(state int32) (id int32, ok bool) {
-	id, ok = p.stateToID[state]
-
+func (p *MapPalette) StateToID(state int32) int32 {
+	id, ok := p.stateToID[state]
 	if !ok && p.Size() < p.maxId+1 {
 		p.nextId++
 
@@ -175,15 +174,18 @@ func (p *MapPalette) StateToID(state int32) (id int32, ok bool) {
 		p.stateToID[state] = id
 	}
 
-	return id, ok
+	if !ok {
+		return -1
+	}
+	return id
 }
 
 // IDToState converts the storage ID to a block state. If it is not mapped, then it will return false as
 // it's second return value.
-func (p *MapPalette) IDToState(id int32) (state int32, ok bool) {
+func (p *MapPalette) IDToState(id int32) int32 {
 	if id >= 0 && id < p.Size() {
-		return p.idToState[id], true
+		return p.idToState[id]
 	} else {
-		return 0, false
+		return 0
 	}
 }

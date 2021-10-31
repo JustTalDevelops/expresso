@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/justtaldevelops/expresso/expresso/nbt"
 	"github.com/justtaldevelops/expresso/expresso/text"
@@ -129,11 +130,12 @@ func (w *Writer) Chunk(x *Chunk) {
 	w.Uint8(&bitsPerEntry)
 
 	if _, ok := x.palette.(*GlobalPalette); !ok {
+		fmt.Printf("not global palette! %T\n", x.palette)
 		paletteLength := x.palette.Size()
 		w.Varint32(&paletteLength)
 
 		for i := int32(0); i < paletteLength; i++ {
-			state, _ := x.palette.IDToState(i)
+			state := x.palette.IDToState(i)
 			w.Varint32(&state)
 		}
 	}

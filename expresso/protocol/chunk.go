@@ -4,7 +4,6 @@ package protocol
 // https://github.com/GeyserMC/MCProtocolLib
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -60,24 +59,16 @@ func (c *Chunk) Get(x, y, z int32) (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	state, ok := c.palette.IDToState(id)
-	if !ok {
-		return 0, fmt.Errorf("could not find state for id %v", id)
-	}
-
-	return state, nil
+	return c.palette.IDToState(id), nil
 }
 
 // Set sets the block state at the given position.
 func (c *Chunk) Set(x, y, z, state int32) error {
-	id, ok := c.palette.StateToID(state)
-	if !ok {
+	id := c.palette.StateToID(state)
+	if id == -1 {
 		c.resizePalette()
 
-		id, ok = c.palette.StateToID(state)
-		if !ok {
-			panic("should never happen")
-		}
+		id = c.palette.StateToID(state)
 	}
 
 	ind := index(x, y, z)
@@ -108,10 +99,7 @@ func (c *Chunk) resizePalette() {
 
 	for i := int32(0); i < chunkSize; i++ {
 		id, _ := c.storage.Get(i)
-		state, _ := c.palette.IDToState(id)
-		newID, _ := newPalette.StateToID(state)
-
-		_ = newStorage.Set(i, newID)
+		_ = newStorage.Set(i, newPalette.StateToID(c.palette.IDToState(id)))
 	}
 
 	c.palette, c.storage = newPalette, newStorage
