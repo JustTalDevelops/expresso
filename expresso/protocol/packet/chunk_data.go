@@ -14,7 +14,7 @@ type ChunkData struct {
 
 // ID ...
 func (*ChunkData) ID() int32 {
-	return 0x49
+	return 0x22
 }
 
 // Marshal ...

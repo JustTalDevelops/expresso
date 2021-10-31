@@ -48,6 +48,7 @@ var (
 		clientBoundPackets: map[int32]func() Packet{
 			0x1A: func() Packet { return &Disconnect{} },
 			0x21: func() Packet { return &ServerKeepAlive{} },
+			0x22: func() Packet { return &ChunkData{} },
 			0x26: func() Packet { return &JoinGame{} },
 			0x38: func() Packet { return &ServerPlayerPositionRotation{} },
 			0x49: func() Packet { return &UpdateViewPosition{} },
