@@ -1,5 +1,7 @@
 package protocol
 
+import "fmt"
+
 // This has effectively been ported from Geyser's MCProtocolLib. Thanks a ton!
 // https://github.com/GeyserMC/MCProtocolLib
 
@@ -15,21 +17,6 @@ const (
 	// globalPaletteBitsPerEntry is the number of bits per entry in the global palette.
 	globalPaletteBitsPerEntry = 14
 )
-
-// Column represents a chunk column, which contains chunk data, the chunk position, biomes,
-// and other useful information for the client.
-type Column struct {
-	// X, Z are the column coordinates.
-	X, Z int32
-	// Chunks contain all chunks associated with the column.
-	Chunks []*Chunk
-	// Tiles contains all tile entities associated with the column.
-	Tiles []map[string]interface{}
-	// HeightMaps contains all height maps associated with the column.
-	HeightMaps map[string]interface{}
-	// Biomes contains all biomes associated with the column.
-	Biomes []int32
-}
 
 // Chunk is an implementation of the modern Minecraft chunk.
 type Chunk struct {
@@ -78,6 +65,7 @@ func (c *Chunk) Set(x, y, z, state int32) error {
 		c.blockCount--
 	}
 
+	fmt.Printf("Set: %v to %v\n", ind, id)
 	return c.storage.Set(ind, id)
 }
 

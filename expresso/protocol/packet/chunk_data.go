@@ -9,7 +9,7 @@ import (
 // ChunkData is sent by the server to update a chunk client-side
 type ChunkData struct {
 	// Column is the chunk column that is being referenced.
-	Column protocol.Column
+	Column *protocol.Column
 }
 
 // ID ...
@@ -25,17 +25,16 @@ func (pk *ChunkData) Marshal(w *protocol.Writer) {
 
 	bitSet := &bitset.BitSet{}
 
-	for index := 0; index < len(pk.Column.Chunks); index++ {
-		chunk := pk.Column.Chunks[index]
-		if chunk != nil && !chunk.Empty() {
+	for index, chunk := range pk.Column.Chunks {
+		if !chunk.Empty() {
 			bitSet.Set(uint(index))
 			dataWriter.Chunk(chunk)
 		}
 	}
 
 	// Chunk position.
-	w.Int32(&pk.Column.X)
-	w.Int32(&pk.Column.Z)
+	w.Int32(&pk.Column.Position[0])
+	w.Int32(&pk.Column.Position[1])
 
 	// Write bitset to main writer.
 	bitSetIntegers := bitSet.Bytes()
@@ -75,8 +74,8 @@ func (pk *ChunkData) Marshal(w *protocol.Writer) {
 // Unmarshal ...
 func (pk *ChunkData) Unmarshal(r *protocol.Reader) {
 	// Chunk position.
-	r.Int32(&pk.Column.X)
-	r.Int32(&pk.Column.Z)
+	r.Int32(&pk.Column.Position[0])
+	r.Int32(&pk.Column.Position[1])
 
 	// Read chunk mask.
 	var bitSetSize int32
@@ -109,10 +108,12 @@ func (pk *ChunkData) Unmarshal(r *protocol.Reader) {
 	r.ByteSlice(&data)
 
 	dataReader := protocol.NewReader(bytes.NewReader(data))
-	chunks := make([]*protocol.Chunk, chunkMask.Count())
-	for index := 0; index < len(chunks); index++ {
-		if chunkMask.Test(uint(index)) {
-			dataReader.Chunk(chunks[index])
+	for index := uint(0); index < chunkMask.Count(); index++ {
+		if chunkMask.Test(index) {
+			var chunk *protocol.Chunk
+			dataReader.Chunk(chunk)
+
+			pk.Column.Chunks[int32(index)] = chunk
 		}
 	}
 

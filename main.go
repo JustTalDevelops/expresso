@@ -42,47 +42,15 @@ func handleConnection(conn *expresso.Connection) {
 		panic(err)
 	}
 
-	// Initialize empty biome data.
-	emptyBiomeData := make([]int32, 1024)
-	for i := 0; i < 1024; i++ {
-		emptyBiomeData[i] = 1
-	}
-
-	chunk := protocol.NewEmptyChunk()
-	err = chunk.Set(0, 0, 0, 10)
+	// Initialize a new column.
+	column := protocol.NewColumn(protocol.ColumnPosition{0, 0})
+	err = column.Set(0, 1, 0, 10)
 	if err != nil {
 		panic(err)
 	}
 
 	// Write the column data for this specific chunk.
-	err = conn.WritePacket(&packet.ChunkData{Column: protocol.Column{
-		X: 0, Z: 0,
-		Chunks: []*protocol.Chunk{
-			nil, nil, nil, nil, nil, nil, nil, chunk, nil, chunk, nil, nil, nil, chunk,
-			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil, nil,
-		},
-		Tiles:      []map[string]interface{}{},
-		HeightMaps: map[string]interface{}{},
-		Biomes:     emptyBiomeData,
-	}})
-
-	// Write the column data for this specific chunk x2.
-	err = conn.WritePacket(&packet.ChunkData{Column: protocol.Column{
-		X: 1, Z: 1,
-		Chunks: []*protocol.Chunk{
-			chunk, chunk, chunk, chunk, chunk, chunk, chunk, chunk, chunk, chunk,
-			chunk, chunk, chunk, chunk, chunk, chunk, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		},
-		Tiles:      []map[string]interface{}{},
-		HeightMaps: map[string]interface{}{},
-		Biomes:     emptyBiomeData,
-	}})
+	err = conn.WritePacket(&packet.ChunkData{Column: column})
 
 	// Update the player's viewing column.
 	err = conn.WritePacket(&packet.UpdateViewPosition{})
