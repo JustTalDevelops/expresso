@@ -1,28 +1,8 @@
 package packet
 
 import (
-	_ "embed"
-	"github.com/justtaldevelops/expresso/expresso/nbt"
 	"github.com/justtaldevelops/expresso/expresso/protocol"
 )
-
-var (
-	// dimensionCodec is a compound tag required for the JoinGame packet which currently has an unknown purpose.
-	dimensionCodec map[string]interface{}
-	// dimension is a compound tag required for the JoinGame packet which defines valid dimensions.
-	dimension map[string]interface{}
-
-	//go:embed dimension_codec.nbt
-	dimensionCodecData []byte
-	//go:embed dimension.nbt
-	dimensionData []byte
-)
-
-// init initializes the dimensionCodec and dimension maps.
-func init() {
-	_ = nbt.Unmarshal(dimensionCodecData, &dimensionCodec)
-	_ = nbt.Unmarshal(dimensionData, &dimension)
-}
 
 // JoinGame is sent by the server to the client to join a game.
 type JoinGame struct {

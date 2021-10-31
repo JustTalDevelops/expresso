@@ -1,7 +1,7 @@
 package packet
 
-// packetCollection represents a collection of client-bound and server-bound packets.
-type packetCollection struct {
+// collection represents a collection of client-bound and server-bound packets.
+type collection struct {
 	// clientBoundPackets holds client-bound packets for the state.
 	clientBoundPackets map[int32]func() Packet
 	// serverBoundPackets holds server-bound packets for the state.
@@ -10,14 +10,14 @@ type packetCollection struct {
 
 var (
 	// handshakingCollection is the packet collection for the handshaking state.
-	handshakingCollection = &packetCollection{
+	handshakingCollection = &collection{
 		clientBoundPackets: map[int32]func() Packet{},
 		serverBoundPackets: map[int32]func() Packet{
 			0x00: func() Packet { return &Handshake{} },
 		},
 	}
 	// statusCollection is the packet collection for the status state.
-	statusCollection = &packetCollection{
+	statusCollection = &collection{
 		clientBoundPackets: map[int32]func() Packet{
 			0x00: func() Packet { return &ServerStatusResponse{} },
 			0x01: func() Packet { return &ServerStatusPong{} },
@@ -28,7 +28,7 @@ var (
 		},
 	}
 	// loginCollection is the packet collection for the login state.
-	loginCollection = &packetCollection{
+	loginCollection = &collection{
 		clientBoundPackets: map[int32]func() Packet{
 			0x00: func() Packet { return &LoginDisconnect{} },
 			0x01: func() Packet { return &EncryptionRequest{} },
@@ -43,7 +43,7 @@ var (
 		},
 	}
 	// playCollection is the packet collection for the play state.
-	playCollection = &packetCollection{
+	playCollection = &collection{
 		// TODO: Add all play packets.
 		clientBoundPackets: map[int32]func() Packet{
 			0x1A: func() Packet { return &Disconnect{} },

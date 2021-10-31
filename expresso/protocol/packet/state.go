@@ -3,30 +3,30 @@ package packet
 // State represents the state the connection is on. These split up the packets that can be accessed
 // to a specific selection based on the state.
 type State struct {
-	// packetCollection is the packet collection the state is linked to.
-	*packetCollection
+	// collection is the packet collection the state is linked to.
+	*collection
 	// state is the actual state value.
 	state
 }
 
 // StateHandshaking represents the handshaking state.
 func StateHandshaking() State {
-	return State{state: stateHandshaking, packetCollection: handshakingCollection}
+	return State{state: stateHandshaking, collection: handshakingCollection}
 }
 
 // StateStatus represents the status state.
 func StateStatus() State {
-	return State{state: stateStatus, packetCollection: statusCollection}
+	return State{state: stateStatus, collection: statusCollection}
 }
 
 // StateLogin represents the login state.
 func StateLogin() State {
-	return State{state: stateLogin, packetCollection: loginCollection}
+	return State{state: stateLogin, collection: loginCollection}
 }
 
 // StatePlay represents the play state.
 func StatePlay() State {
-	return State{state: statePlay, packetCollection: playCollection}
+	return State{state: statePlay, collection: playCollection}
 }
 
 // Packet finds a packet in the state. based on the target direction and ID.
