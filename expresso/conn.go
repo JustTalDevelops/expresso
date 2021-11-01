@@ -170,11 +170,13 @@ func (c *Connection) keepAlive() {
 	t := time.NewTicker(time.Second)
 	defer t.Stop()
 
+	c.lastKeepAlive.Store(time.Now().Unix())
+
 	for {
 		select {
 		case <-t.C:
 			if time.Since(time.Unix(c.lastKeepAlive.Load(), 0)).Seconds() > 30 {
-				c.Disconnect(text.Text{Text: "Timed out!"})
+				c.Disconnect(text.Text{Text: "You timed out! Please reconnect and ensure you're not having internet issues."})
 				return
 			}
 
