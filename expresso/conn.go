@@ -313,10 +313,19 @@ func (c *Connection) handleLogin() (bool, error) {
 		return true, fmt.Errorf("verify tokens do not match")
 	}
 
-	// Make sure that the player is authenticated with Mojang.
-	authenticated, data := authenticatedWithMojang(loginStart.Username, sharedSecret, encryptionRequest)
-	if !authenticated {
-		return true, fmt.Errorf("not authenticated with mojang")
+	// Check what type of UUID we should respond with.
+	var uuidForResponse uuid.UUID
+	if c.listener.authentication {
+		// Make sure that the player is authenticated with Mojang.
+		authenticated, data := authenticatedWithMojang(loginStart.Username, sharedSecret, encryptionRequest)
+		if !authenticated {
+			return true, fmt.Errorf("not authenticated with mojang")
+		}
+
+		uuidForResponse = uuid.MustParse(data.UUID)
+	} else {
+		// The Notchian server does this for whatever reason?
+		uuidForResponse, _ = uuid.FromBytes([]byte("OfflinePlayer:" + loginStart.Username))
 	}
 
 	// Initialize the new symmetric encryptor.
@@ -341,8 +350,8 @@ func (c *Connection) handleLogin() (bool, error) {
 
 	// Succeed with login!
 	err = c.WritePacket(&packet.LoginSuccess{
-		UUID:     uuid.MustParse(data.UUID),
-		Username: data.Name,
+		UUID:     uuidForResponse,
+		Username: loginStart.Username,
 	})
 	if err != nil {
 		return true, err
