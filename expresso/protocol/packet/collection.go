@@ -34,12 +34,10 @@ var (
 			0x01: func() Packet { return &EncryptionRequest{} },
 			0x02: func() Packet { return &LoginSuccess{} },
 			0x03: func() Packet { return &SetCompression{} },
-			// Modern code shouldn't be using login plugin request packets, which is why it isn't here.
 		},
 		serverBoundPackets: map[int32]func() Packet{
 			0x00: func() Packet { return &LoginStart{} },
 			0x01: func() Packet { return &EncryptionResponse{} },
-			// Modern code shouldn't be using login plugin response packets, which is why it isn't here.
 		},
 	}
 	// playCollection is the packet collection for the play state.
