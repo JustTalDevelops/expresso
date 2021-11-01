@@ -11,8 +11,8 @@
 - [ ] All play state packets.
 
 ## Example
-You can find a basic example in main.go. The example sends a chunk column for (0, 0) to every connection which has
-the block at (0, 1, 0) and (1, 3, 0) set to dirt.
+You can find a basic example in main.go. The example sends a chunk column for `(0, 0)` to every connection which has
+the block at `(0, 1, 0)` and `(1, 3, 0)` set to the block state of `10`, which is `minecraft:dirt`.
 
 ## Disclaimer
 Do not expect anything completely working right now! Currently, there's only enough to get the player spawned in the
