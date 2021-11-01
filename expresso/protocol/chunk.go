@@ -36,7 +36,7 @@ func NewEmptyChunk() *Chunk {
 
 // Get returns the block state at the given position.
 func (c *Chunk) Get(x, y, z int32) (int32, error) {
-	id, err := c.storage.GetBlockState(index(x, y, z))
+	id, err := c.storage.Get(index(x, y, z))
 	if err != nil {
 		return 0, err
 	}
@@ -52,7 +52,7 @@ func (c *Chunk) Set(x, y, z, state int32) error {
 	}
 
 	ind := index(x, y, z)
-	curr, err := c.storage.GetBlockState(ind)
+	curr, err := c.storage.Get(ind)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (c *Chunk) Set(x, y, z, state int32) error {
 		c.blockCount--
 	}
 
-	return c.storage.SetBlockState(ind, id)
+	return c.storage.Set(ind, id)
 }
 
 // Empty returns true if the chunk is empty.
@@ -78,8 +78,8 @@ func (c *Chunk) resizePalette() {
 	newStorage := NewEmptyBitStorage(bitsPerEntry, chunkSize)
 
 	for i := int32(0); i < chunkSize; i++ {
-		id, _ := c.storage.GetBlockState(i)
-		_ = newStorage.SetBlockState(i, newPalette.StateToID(c.palette.IDToState(id)))
+		id, _ := c.storage.Get(i)
+		_ = newStorage.Set(i, newPalette.StateToID(c.palette.IDToState(id)))
 	}
 
 	c.palette, c.storage = newPalette, newStorage

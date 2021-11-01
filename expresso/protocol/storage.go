@@ -52,8 +52,8 @@ func NewBitStorageWithData(bitsPerEntry int32, size int32, data []int64) (*BitSt
 	return storage, nil
 }
 
-// SetBlockState sets the value at the given index.
-func (b *BitStorage) SetBlockState(index, value int32) error {
+// Set sets the value at the given index.
+func (b *BitStorage) Set(index, value int32) error {
 	if index < 0 || index > b.size-1 || value < 0 || int64(value) > b.mask {
 		return fmt.Errorf("index out of data bounds (%v)", index)
 	}
@@ -66,8 +66,8 @@ func (b *BitStorage) SetBlockState(index, value int32) error {
 	return nil
 }
 
-// GetBlockState returns the value at the given index.
-func (b *BitStorage) GetBlockState(index int32) (int32, error) {
+// Get returns the value at the given index.
+func (b *BitStorage) Get(index int32) (int32, error) {
 	if index < 0 || index > b.size-1 {
 		return 0, fmt.Errorf("index out of data bounds (%v)", index)
 	}
