@@ -21,31 +21,22 @@ type BitStorage struct {
 
 // NewEmptyBitStorage creates a new empty BitStorage.
 func NewEmptyBitStorage(bitsPerEntry int32, size int32) *BitStorage {
-	storage, err := NewBitStorageWithData(bitsPerEntry, size, nil)
-	if err != nil {
-		panic("should never happen")
-	}
-	return storage
-}
-
-// NewBitStorageWithData creates a new BitStorage instance with the provided data.
-func NewBitStorageWithData(bitsPerEntry int32, size int32, data []int64) (*BitStorage, error) {
 	storage := &BitStorage{
 		mask:           1<<bitsPerEntry - 1,
 		bitsPerEntry:   bitsPerEntry,
 		size:           size,
 		valuesPerEntry: 64 / bitsPerEntry,
 	}
+	storage.data = make([]int64, (size+storage.valuesPerEntry-1)/storage.valuesPerEntry)
 
-	dataLen := (size + storage.valuesPerEntry - 1) / storage.valuesPerEntry
-	if data == nil {
-		storage.data = make([]int64, dataLen)
-		return storage, nil
-	}
+	return storage
+}
 
-	otherLength := int32(len(data))
-	if otherLength != dataLen {
-		return nil, fmt.Errorf("invalid data length of %v, expected %v", dataLen, otherLength)
+// NewBitStorageWithData creates a new BitStorage instance with the provided data.
+func NewBitStorageWithData(bitsPerEntry int32, size int32, data []int64) (*BitStorage, error) {
+	storage := NewEmptyBitStorage(bitsPerEntry, size)
+	if len(data) != len(storage.data) {
+		return nil, fmt.Errorf("data length %d does not match storage length %d", len(data), len(storage.data))
 	}
 
 	storage.data = data
