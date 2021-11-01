@@ -77,7 +77,7 @@ func (cfg ListenConfig) Listen(address string) (*Listener, error) {
 	}
 
 	list := &Listener{address: address, authentication: !cfg.DisableAuthentication, errorLog: cfg.ErrorLog, listener: l, keyPair: key, verifyToken: token, incoming: make(chan *Connection)}
-	list.status.Store(*cfg.Status)
+	list.status.Store(cfg.Status)
 
 	go list.startListening()
 
@@ -106,13 +106,13 @@ func (l *Listener) Accept() (*Connection, error) {
 }
 
 // UpdateStatus updates the server status.
-func (l *Listener) UpdateStatus(status Status) {
+func (l *Listener) UpdateStatus(status *Status) {
 	l.status.Store(status)
 }
 
 // Status returns the server status.
-func (l *Listener) Status() Status {
-	return l.status.Load().(Status)
+func (l *Listener) Status() *Status {
+	return l.status.Load().(*Status)
 }
 
 // startListening starts listening on the listener.
