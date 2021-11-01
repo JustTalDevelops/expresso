@@ -8,6 +8,7 @@ const (
 	air = 0
 	// chunkSize contains all blocks that are in a chunk.
 	chunkSize = 4096
+
 	// minimumPaletteBitsPerEntry is the minimum number of bitsPerEntry per entry in the palette.
 	minimumPaletteBitsPerEntry = 4
 	// maximumPaletteBitsPerEntry is the maximum number of bitsPerEntry per entry in the palette.
@@ -34,8 +35,8 @@ func NewEmptyChunk() *Chunk {
 	}
 }
 
-// Get returns the block state at the given position.
-func (c *Chunk) Get(x, y, z int32) (int32, error) {
+// GetBlockState returns the block state at the given position.
+func (c *Chunk) GetBlockState(x, y, z int32) (int32, error) {
 	id, err := c.storage.Get(index(x, y, z))
 	if err != nil {
 		return 0, err
@@ -43,8 +44,8 @@ func (c *Chunk) Get(x, y, z int32) (int32, error) {
 	return c.palette.IDToState(id), nil
 }
 
-// Set sets the block state at the given position.
-func (c *Chunk) Set(x, y, z, state int32) error {
+// SetBlockState sets the block state at the given position.
+func (c *Chunk) SetBlockState(x, y, z, state int32) error {
 	id := c.palette.StateToID(state)
 	if id == -1 {
 		c.resizePalette()

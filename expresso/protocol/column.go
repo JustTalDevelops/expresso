@@ -42,7 +42,7 @@ func (c *Column) GetBlockState(pos BlockPos) (int32, error) {
 	}
 
 	// Return the state ID from the chunk function.
-	return chunk.Get(pos.X(), pos.Y()&15, pos.Z())
+	return chunk.GetBlockState(pos.X(), pos.Y()&15, pos.Z())
 }
 
 // SetBlockState sets the state ID of a block position.
@@ -65,5 +65,5 @@ func (c *Column) SetBlockState(pos BlockPos, state int32) error {
 		c.Chunks[chunkIndex] = chunk
 	}
 
-	return chunk.Set(pos.X(), pos.Y()&15, pos.Z(), state)
+	return chunk.SetBlockState(pos.X(), pos.Y()&15, pos.Z(), state)
 }
