@@ -27,6 +27,8 @@ type Connection struct {
 
 	closed atomic.Bool
 
+	lastKeepAlive atomic.Int64
+
 	threshold atomic.Int32
 
 	packetState atomic.Value
@@ -163,18 +165,23 @@ func (c *Connection) state() packet.State {
 	return c.packetState.Load().(packet.State)
 }
 
-// keepAlive keeps the connection alive by sending keep alive packets every two seconds.
+// keepAlive keeps the connection alive by sending keep alive packets every second.
 func (c *Connection) keepAlive() {
-	t := time.NewTicker(2 * time.Second)
+	t := time.NewTicker(time.Second)
 	defer t.Stop()
 
 	for {
 		select {
 		case <-t.C:
+			if time.Since(time.Unix(c.lastKeepAlive.Load(), 0)).Seconds() > 30 {
+				c.Disconnect(text.Text{Text: "Timed out!"})
+				return
+			}
+
 			err := c.WritePacket(&packet.ServerKeepAlive{PingID: time.Now().UnixNano() / int64(time.Millisecond)})
 			if err != nil {
 				c.Close()
-				break
+				return
 			}
 		}
 	}
@@ -200,7 +207,7 @@ func (c *Connection) startReading() {
 func (c *Connection) handlePacket(pk packet.Packet) (bool, error) {
 	switch pk := pk.(type) {
 	case *packet.ClientKeepAlive:
-		// TODO: Disconnect the connection if the connector doesn't respond for at least X seconds.
+		c.lastKeepAlive.Store(time.Now().Unix())
 		return true, nil
 	case *packet.Handshake:
 		return c.handleHandshake(pk)
