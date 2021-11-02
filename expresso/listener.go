@@ -4,8 +4,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
-	"github.com/justtaldevelops/expresso/expresso/protocol"
-	"github.com/justtaldevelops/expresso/expresso/text"
 	"go.uber.org/atomic"
 	"log"
 	"net"
@@ -19,8 +17,8 @@ type ListenConfig struct {
 	ErrorLog *log.Logger
 	// DisableAuthentication is true if logins should not be verified with Minecraft/Mojang.
 	DisableAuthentication bool
-	// Status represents the server list status which is displayed on the multiplayer screen.
-	Status *Status
+	// StatusProvider represents the server list status which is displayed on the multiplayer screen.
+	StatusProvider StatusProvider
 }
 
 // Listener is an Expresso listener. It listens on TCP for Minecraft packets, decodes them, and allows
@@ -60,24 +58,12 @@ func (cfg ListenConfig) Listen(address string) (*Listener, error) {
 	if cfg.ErrorLog == nil {
 		cfg.ErrorLog = log.New(os.Stderr, "", log.LstdFlags)
 	}
-	if cfg.Status == nil {
-		cfg.Status = &Status{
-			Version: Version{
-				Name:     protocol.CurrentVersion,
-				Protocol: protocol.CurrentProtocol,
-			},
-			Players: Players{Online: 9, Max: 10, Sample: []Player{}},
-			Description: text.Text{
-				Text:   "An Expresso Listener",
-				Color:  "gold",
-				Bold:   true,
-				Italic: true,
-			},
-		}
+	if cfg.StatusProvider == nil {
+		cfg.StatusProvider = &DefaultStatusProvider{}
 	}
 
 	list := &Listener{address: address, authentication: !cfg.DisableAuthentication, errorLog: cfg.ErrorLog, listener: l, keyPair: key, verifyToken: token, incoming: make(chan *Connection)}
-	list.status.Store(cfg.Status)
+	list.status.Store(cfg.StatusProvider)
 
 	go list.startListening()
 
@@ -105,14 +91,19 @@ func (l *Listener) Accept() (*Connection, error) {
 	return conn, nil
 }
 
-// UpdateStatus updates the server status.
-func (l *Listener) UpdateStatus(status *Status) {
+// UpdateStatusProvider updates the server status.
+func (l *Listener) UpdateStatusProvider(status StatusProvider) {
 	l.status.Store(status)
 }
 
+// StatusProvider returns the listeners' status provider.
+func (l *Listener) StatusProvider() StatusProvider {
+	return l.status.Load().(StatusProvider)
+}
+
 // Status returns the server status.
-func (l *Listener) Status() *Status {
-	return l.status.Load().(*Status)
+func (l *Listener) Status() Status {
+	return l.StatusProvider().Status()
 }
 
 // startListening starts listening on the listener.
