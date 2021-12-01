@@ -155,6 +155,13 @@ func (w *Writer) DataPalette(x *DataPalette) {
 	}
 }
 
+// ChunkSection writes a chunk section to the underlying buffer.
+func (w *Writer) ChunkSection(_ int32, x *ChunkSection) {
+	w.Int16(&x.blockCount)
+	w.DataPalette(x.chunkData)
+	w.DataPalette(x.biomeData)
+}
+
 // NBT writes a map as a compound tag to the underlying buffer.
 func (w *Writer) NBT(x *map[string]interface{}) {
 	if err := nbt.NewEncoderWithEncoding(w, nbt.BigEndian).Encode(*x); err != nil {

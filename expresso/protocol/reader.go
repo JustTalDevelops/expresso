@@ -198,6 +198,13 @@ func (r *Reader) DataPalette(globalPaletteBits int32, paletteType PaletteType, x
 	}
 }
 
+// ChunkSection reads a chunk section from the underlying buffer.
+func (r *Reader) ChunkSection(globalBiomePaletteBits int32, x *ChunkSection) {
+	r.Int16(&x.blockCount)
+	r.DataPalette(globalPaletteBitsPerEntry, ChunkPaletteType(), x.chunkData)
+	r.DataPalette(globalBiomePaletteBits, BiomePaletteType(), x.biomeData)
+}
+
 // NBT reads a map as a compound tag from the underlying buffer.
 func (r *Reader) NBT(x *map[string]interface{}) {
 	if err := nbt.NewDecoderWithEncoding(r, nbt.BigEndian).Decode(x); err != nil {

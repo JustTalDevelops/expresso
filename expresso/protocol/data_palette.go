@@ -44,9 +44,9 @@ func NewEmptyDataPalette(paletteType PaletteType, globalPaletteBits int32) *Data
 }
 
 // GetBlockState returns the block state at the given position.
-func (d *DataPalette) GetBlockState(x, y, z int32) (int32, error) {
+func (d *DataPalette) GetBlockState(pos BlockPos) (int32, error) {
 	if d.storage != nil {
-		id, err := d.storage.Get(index(x, y, z))
+		id, err := d.storage.Get(index(pos))
 		if err != nil {
 			return 0, err
 		}
@@ -57,7 +57,7 @@ func (d *DataPalette) GetBlockState(x, y, z int32) (int32, error) {
 }
 
 // SetBlockState sets the block state at the given position.
-func (d *DataPalette) SetBlockState(x, y, z, state int32) (int32, error) {
+func (d *DataPalette) SetBlockState(pos BlockPos, state int32) (int32, error) {
 	id := d.palette.StateToID(state)
 	if id == -1 {
 		d.resize()
@@ -65,7 +65,7 @@ func (d *DataPalette) SetBlockState(x, y, z, state int32) (int32, error) {
 	}
 
 	if d.storage != nil {
-		ind := index(x, y, z)
+		ind := index(pos)
 		curr, err := d.storage.Get(ind)
 		if err != nil {
 			return 0, err
@@ -144,7 +144,7 @@ func createPalette(bitsPerEntry int32, paletteType PaletteType) Palette {
 	}
 }
 
-// index converts an X, y, and Z to an integer based index.
-func index(x, y, z int32) int32 {
-	return y<<8 | z<<4 | x
+// index converts a position to an integer based index.
+func index(pos BlockPos) int32 {
+	return pos.Y()<<8 | pos.Z()<<4 | pos.X()
 }

@@ -40,6 +40,9 @@ type IO interface {
 	// Text reads/writes Minecraft-style text from/to the underlying buffer.
 	Text(x *text.Text)
 
+	// ChunkSection reads/writes a chunk section from/to the underlying buffer.
+	ChunkSection(globalBiomePaletteBits int32, x *ChunkSection)
+
 	// NBT reads/writes a map as a compound tag from/to the underlying buffer.
 	NBT(x *map[string]interface{})
 }
