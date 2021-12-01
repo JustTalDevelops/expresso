@@ -156,7 +156,7 @@ func (w *Writer) DataPalette(x *DataPalette) {
 }
 
 // ChunkSection writes a chunk section to the underlying buffer.
-func (w *Writer) ChunkSection(_ int32, x *ChunkSection) {
+func (w *Writer) ChunkSection(x *ChunkSection) {
 	w.Int16(&x.blockCount)
 	w.DataPalette(x.chunkData)
 	w.DataPalette(x.biomeData)
