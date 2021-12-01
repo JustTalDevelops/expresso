@@ -120,12 +120,20 @@ func (w *Writer) Text(x *text.Text) {
 	w.String(&s)
 }
 
-// Chunk writes a chunk to the underlying buffer.
-func (w *Writer) Chunk(x *Chunk) {
-	blockCount := int16(x.blockCount)
-	bitsPerEntry := uint8(x.storage.bitsPerEntry)
+// DataPalette writes a data palette to the underlying buffer.
+func (w *Writer) DataPalette(x *DataPalette) {
+	if _, ok := x.palette.(*SingletonPalette); ok {
+		state := x.palette.IDToState(0)
+		bitsPerEntry := uint8(0)
+		dataLength := int32(0)
 
-	w.Int16(&blockCount)
+		w.Uint8(&bitsPerEntry)
+		w.Varint32(&state)
+		w.Varint32(&dataLength)
+		return
+	}
+
+	bitsPerEntry := uint8(x.storage.bitsPerEntry)
 	w.Uint8(&bitsPerEntry)
 
 	if _, ok := x.palette.(*GlobalPalette); !ok {

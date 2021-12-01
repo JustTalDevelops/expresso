@@ -18,6 +18,34 @@ type Palette interface {
 	IDToState(id int32) int32
 }
 
+// PaletteType is a palette type implementation.
+type PaletteType struct {
+	// MinimumBitsPerEntry is the minimum number of bits per entry for the palette.
+	MinimumBitsPerEntry int32
+	// MaximumBitsPerEntry is the maximum number of bits per entry for the palette.
+	MaximumBitsPerEntry int32
+	// StorageSize is the number of bits used to store the palette.
+	StorageSize int32
+}
+
+// BiomePaletteType returns a biome palette type implementation.
+func BiomePaletteType() PaletteType {
+	return PaletteType{
+		MinimumBitsPerEntry: 1,
+		MaximumBitsPerEntry: 3,
+		StorageSize:         64,
+	}
+}
+
+// ChunkPaletteType returns a chunk palette type implementation.
+func ChunkPaletteType() PaletteType {
+	return PaletteType{
+		MinimumBitsPerEntry: 4,
+		MaximumBitsPerEntry: 8,
+		StorageSize:         4096,
+	}
+}
+
 // GlobalPalette is a global palette that maps one to one.
 type GlobalPalette struct{}
 
@@ -190,4 +218,46 @@ func (p *MapPalette) IDToState(id int32) int32 {
 	} else {
 		return 0
 	}
+}
+
+// SingletonPalette is a palette backed by a single block state.
+type SingletonPalette struct {
+	// state is the block state.
+	state int32
+}
+
+// NewSingletonPalette returns a new singleton palette.
+func NewSingletonPalette(state int32) *SingletonPalette {
+	return &SingletonPalette{state: state}
+}
+
+// NewSingletonPaletteFromReader returns a new singleton palette from the given reader.
+func NewSingletonPaletteFromReader(reader *Reader) *SingletonPalette {
+	var state int32
+	reader.Int32(&state)
+
+	return NewSingletonPalette(state)
+}
+
+// Size returns the known number of block states in the palette.
+func (p *SingletonPalette) Size() int32 {
+	return 1
+}
+
+// StateToID converts the block state to a storage ID. If it is not mapped, then the palette will attempt
+// to map it. If all else fails, it will return false as it's second return value.
+func (p *SingletonPalette) StateToID(state int32) int32 {
+	if p.state == state {
+		return 0
+	}
+	return -1
+}
+
+// IDToState converts the storage ID to a block state. If it is not mapped, then it will return false as
+// it's second return value.
+func (p *SingletonPalette) IDToState(id int32) int32 {
+	if id == 0 {
+		return p.state
+	}
+	return 0
 }
