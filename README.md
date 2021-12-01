@@ -1,5 +1,5 @@
 # expresso
-> A library designed for hosting Minecraft: Java Edition listeners.
+> A library designed for hosting Minecraft: Java Edition listeners (currently for 1.18.0).
 
 ## Features
 - [X] Hosting listeners.
