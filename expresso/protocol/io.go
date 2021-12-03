@@ -39,8 +39,6 @@ type IO interface {
 	UUID(x *uuid.UUID)
 	// Text reads/writes Minecraft-style text from/to the underlying buffer.
 	Text(x *text.Text)
-	// Chunk reads/writes a chunk from/to the underlying buffer.
-	Chunk(x *Chunk)
 
 	// NBT reads/writes a map as a compound tag from/to the underlying buffer.
 	NBT(x *map[string]interface{})

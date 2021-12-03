@@ -168,34 +168,41 @@ func (r *Reader) Text(x *text.Text) {
 	_ = json.Unmarshal([]byte(s), x)
 }
 
-// Chunk reads a chunk from the underlying buffer.
-func (r *Reader) Chunk(x *Chunk) {
-	var blockCount int16
-	r.Int16(&blockCount)
-
+// DataPalette reads a data palette from the underlying buffer.
+func (r *Reader) DataPalette(globalPaletteBits int32, paletteType PaletteType, x *DataPalette) {
 	var bitsPerEntry byte
 	r.Uint8(&bitsPerEntry)
 
-	palette := readPalette(int32(bitsPerEntry), r)
+	palette := readPalette(paletteType, int32(bitsPerEntry), r)
 
-	var dataSize int32
-	r.Varint32(&dataSize)
+	var storage *BitStorage
+	if _, ok := palette.(*SingletonPalette); ok {
+		var dataSize int32
+		r.Varint32(&dataSize)
 
-	data := make([]int64, dataSize)
-	for i := int32(0); i < dataSize; i++ {
-		r.Int64(&data[i])
+		data := make([]int64, dataSize)
+		for i := int32(0); i < dataSize; i++ {
+			r.Int64(&data[i])
+		}
+
+		storage, _ = NewBitStorageWithData(int32(bitsPerEntry), paletteType.StorageSize, data)
+	} else {
+		_, _ = r.Read(make([]byte, 1))
 	}
 
-	storage, err := NewBitStorageWithData(int32(bitsPerEntry), chunkSize, data)
-	if err != nil {
-		panic(err)
+	*x = DataPalette{
+		palette:           palette,
+		storage:           storage,
+		paletteType:       paletteType,
+		globalPaletteBits: globalPaletteBits,
 	}
+}
 
-	*x = Chunk{
-		blockCount: int32(blockCount),
-		palette:    palette,
-		storage:    storage,
-	}
+// ChunkSection reads a chunk section from the underlying buffer.
+func (r *Reader) ChunkSection(globalBiomePaletteBits int32, x *ChunkSection) {
+	r.Int16(&x.blockCount)
+	r.DataPalette(globalPaletteBitsPerEntry, ChunkPaletteType(), x.chunkData)
+	r.DataPalette(globalBiomePaletteBits, BiomePaletteType(), x.biomeData)
 }
 
 // NBT reads a map as a compound tag from the underlying buffer.

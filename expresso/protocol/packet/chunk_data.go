@@ -32,7 +32,7 @@ func (pk *ChunkData) Marshal(w *protocol.Writer) {
 		}
 	}
 
-	// Chunk position.
+	// DataPalette position.
 	w.Int32(&pk.Column.Position[0])
 	w.Int32(&pk.Column.Position[1])
 
@@ -73,7 +73,7 @@ func (pk *ChunkData) Marshal(w *protocol.Writer) {
 
 // Unmarshal ...
 func (pk *ChunkData) Unmarshal(r *protocol.Reader) {
-	// Chunk position.
+	// DataPalette position.
 	r.Int32(&pk.Column.Position[0])
 	r.Int32(&pk.Column.Position[1])
 
@@ -110,7 +110,7 @@ func (pk *ChunkData) Unmarshal(r *protocol.Reader) {
 	dataReader := protocol.NewReader(bytes.NewReader(data))
 	for index := uint(0); index < chunkMask.Count(); index++ {
 		if chunkMask.Test(index) {
-			var chunk *protocol.Chunk
+			var chunk *protocol.DataPalette
 			dataReader.Chunk(chunk)
 
 			pk.Column.Chunks[int32(index)] = chunk
